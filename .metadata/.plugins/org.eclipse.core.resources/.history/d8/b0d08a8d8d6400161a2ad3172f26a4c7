@@ -1,0 +1,66 @@
+
+public class A2_001_WarmUps_Overcash {
+
+	public static void main(String[] args) {
+		// TODO Auto-generateed method stub
+		System.out.println("[1 ] Motivational phrase\n
+			[2 ] Average of 3 ints");
+	}
+
+	public static boolean do1() {
+		//
+	}
+
+	public static boolean do2() {
+		//
+	}
+
+	public static boolean do3() {
+		//
+	}
+
+	public static boolean do4() {
+		//
+	}
+
+	public static boolean do5() {
+		//
+	}
+
+	public static boolean do6() {
+		//
+	}
+
+	public static boolean do7() {
+		//
+	}
+
+	public static boolean do8() {
+		//
+	}
+
+	public static boolean do9() {
+		//
+	}
+
+	public static boolean do10() {
+		//
+	}
+
+	public static boolean do11() {
+		//
+	}
+
+	public static boolean do12() {
+		//
+	}
+
+	public static boolean do13() {
+		//
+	}
+
+	public static boolean do14() {
+		//
+	}
+
+}

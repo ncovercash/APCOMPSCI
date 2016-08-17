@@ -1,0 +1,94 @@
+import java.util.Scanner;
+
+public class A2_001_WarmUps_Overcash {
+	static boolean run = true;
+	public static void main(String[] args) {
+		// TODO Auto-generateed method stub
+		while (run) {
+			// menu opts
+			System.out.println("[-1] Exit");
+			System.out.println("[1 ] Motivational phrase");
+			System.out.println("[2 ] Average of 3 ints");
+			System.out.println("[3 ] Basic ops of 2 floats");
+			System.out.println("[4 ] Celcius->Farenheit");
+			System.out.println("[5 ] Farenheit->Celcius");
+			System.out.println("[6 ] Miles->Kilometers");
+			System.out.println("[7 ] Human time->Epoch time");
+			System.out.println("[8 ] Epoch time->Human time");
+			System.out.println("[9 ] Distance between 2 points");
+			System.out.println("[10] Radius->SA (sphere");
+			System.out.println("[11] Use Heron's formula to get a triangle's area");
+			System.out.println("[12] MPG/Gas cost calculator");
+			System.out.println("[13] Coin counter");
+			System.out.println("[14] Phone number gen");
+
+			// read input 
+			System.out.print("\n>>> ");
+			Scanner scanner = new Scanner(System.in);
+			String chosenItemStr = scanner.nextLine();
+			try {
+				int chosenItem = Integer.parseInt(chosenItemStr);
+			} catch (Exception e) {
+				System.out.println("Invalid entry");
+				scanner.nextLine();
+			}
+		}
+	}
+
+	public static boolean do1() {
+		//
+	}
+
+	public static boolean do2() {
+		//
+	}
+
+	public static boolean do3() {
+		//
+	}
+
+	public static boolean do4() {
+		//
+	}
+
+	public static boolean do5() {
+		//
+	}
+
+	public static boolean do6() {
+		//
+	}
+
+	public static boolean do7() {
+		//
+	}
+
+	public static boolean do8() {
+		//
+	}
+
+	public static boolean do9() {
+		//
+	}
+
+	public static boolean do10() {
+		//
+	}
+
+	public static boolean do11() {
+		//
+	}
+
+	public static boolean do12() {
+		//
+	}
+
+	public static boolean do13() {
+		//
+	}
+
+	public static boolean do14() {
+		//
+	}
+
+}

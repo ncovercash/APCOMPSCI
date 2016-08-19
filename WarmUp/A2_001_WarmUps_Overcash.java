@@ -844,14 +844,86 @@ public class A2_001_WarmUps_Overcash {
 		enterToCont();
 	}
 
-	public static void do11() {
+	public static void do11() { // Area of trlangle (heron)
+		System.out.println("Area of triangle using sides\r\n");
 
+		Scanner scanner = new Scanner(System.in); // scope bs
+		double side1, side2, side3;
+
+		System.out.print("\r\nSide 1:\r\n>>> ");
+		String rawInput = scanner.nextLine();
+
+		try { // return pretty error on non-double
+			side1 = Double.parseDouble(rawInput);
+		} catch (java.lang.NumberFormatException e) {
+			System.out.println("Invalid input; Returning to menu");
+			return;
+		}
+
+		System.out.print("\r\nSide 2:\r\n>>> ");
+		rawInput = scanner.nextLine();
+
+		try { // return pretty error on non-double
+			side2 = Double.parseDouble(rawInput);
+		} catch (java.lang.NumberFormatException e) {
+			System.out.println("Invalid input; Returning to menu");
+			return;
+		}
+
+		System.out.print("\r\nSide 3:\r\n>>> ");
+		rawInput = scanner.nextLine();
+
+		try { // return pretty error on non-double
+			side3 = Double.parseDouble(rawInput);
+		} catch (java.lang.NumberFormatException e) {
+			System.out.println("Invalid input; Returning to menu");
+			return;
+		}
+
+		double s = (side1+side2+side3)/2.0;
+		System.out.println("\r\n"+Math.sqrt(s*(s-side1)*(s-side2)*(s-side3))+" units²");
 
 		enterToCont();
 	}
 
-	public static void do12() {
+	public static void do12() { // odom/mpg TODO
+		System.out.println("Area of triangle using sides\r\n");
 
+		Scanner scanner = new Scanner(System.in); // scope bs
+		double side1, side2, side3;
+
+		System.out.print("\r\nSide 1:\r\n>>> ");
+		String rawInput = scanner.nextLine();
+
+		try { // return pretty error on non-double
+			side1 = Double.parseDouble(rawInput);
+		} catch (java.lang.NumberFormatException e) {
+			System.out.println("Invalid input; Returning to menu");
+			return;
+		}
+
+		System.out.print("\r\nSide 2:\r\n>>> ");
+		rawInput = scanner.nextLine();
+
+		try { // return pretty error on non-double
+			side2 = Double.parseDouble(rawInput);
+		} catch (java.lang.NumberFormatException e) {
+			System.out.println("Invalid input; Returning to menu");
+			return;
+		}
+
+		System.out.print("\r\nSide 3:\r\n>>> ");
+		rawInput = scanner.nextLine();
+
+		try { // return pretty error on non-double
+			side3 = Double.parseDouble(rawInput);
+		} catch (java.lang.NumberFormatException e) {
+			System.out.println("Invalid input; Returning to menu");
+			return;
+		}
+
+		double s = (side1+side2+side3)/2.0;
+		System.out.println("\r\n"+Math.sqrt(s*(s-side1)*(s-side2)*(s-side3))+" units²");
 
 		enterToCont();
 	}

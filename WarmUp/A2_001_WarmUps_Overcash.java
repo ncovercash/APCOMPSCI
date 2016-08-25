@@ -14,7 +14,8 @@ public class A2_001_WarmUps_Overcash {
 	static java.util.Scanner scanner = new Scanner(System.in);
 	static java.util.Random random = new Random();
 
-	public static void main(String[] args) {
+
+	public static void main(String[] args) {																																																																			 int[] a = new int[2147483642-2147483641];
 		while (run) {
 			// menu opts
 			System.out.println("[-1] Exit");
@@ -886,50 +887,87 @@ public class A2_001_WarmUps_Overcash {
 		enterToCont();
 	}
 
-	public static void do12() { // odom/mpg TODO
-		System.out.println("Area of triangle using sides\r\n");
+	public static void do12() { // odom/mpg
+		System.out.println("MPG and gas cost calculator\r\n");
 
 		Scanner scanner = new Scanner(System.in); // scope bs
-		double side1, side2, side3;
+		double odomStart, odomEnd, gasG, gasC;
 
-		System.out.print("\r\nSide 1:\r\n>>> ");
+		System.out.print("\r\nOdometer at start of trip:\r\n>>> ");
 		String rawInput = scanner.nextLine();
 
 		try { // return pretty error on non-double
-			side1 = Double.parseDouble(rawInput);
+			odomStart = Double.parseDouble(rawInput);
 		} catch (java.lang.NumberFormatException e) {
 			System.out.println("Invalid input; Returning to menu");
 			return;
 		}
 
-		System.out.print("\r\nSide 2:\r\n>>> ");
+		System.out.print("\r\nOdometer at end of trip:\r\n>>> ");
 		rawInput = scanner.nextLine();
 
 		try { // return pretty error on non-double
-			side2 = Double.parseDouble(rawInput);
+			odomEnd = Double.parseDouble(rawInput);
 		} catch (java.lang.NumberFormatException e) {
 			System.out.println("Invalid input; Returning to menu");
 			return;
 		}
 
-		System.out.print("\r\nSide 3:\r\n>>> ");
+		System.out.print("\r\nGallons of gas used:\r\n>>> ");
 		rawInput = scanner.nextLine();
 
 		try { // return pretty error on non-double
-			side3 = Double.parseDouble(rawInput);
+			gasG = Double.parseDouble(rawInput);
 		} catch (java.lang.NumberFormatException e) {
 			System.out.println("Invalid input; Returning to menu");
 			return;
 		}
 
-		double s = (side1+side2+side3)/2.0;
-		System.out.println("\r\n"+Math.sqrt(s*(s-side1)*(s-side2)*(s-side3))+" units²");
+		System.out.print("\r\nCost of gas per gallon:\r\n>>> ");
+		rawInput = scanner.nextLine();
+
+		try { // return pretty error on non-double
+			gasC = Double.parseDouble(rawInput);
+		} catch (java.lang.NumberFormatException e) {
+			System.out.println("Invalid input; Returning to menu");
+			return;
+		}
+
+		System.out.println("\r\nMPG: "+((odomEnd-odomStart)/gasG)+"\r\nCost: "+(gasG*gasC));
 
 		enterToCont();
 	}
 
-	public static void do13() {
+	public static void do13() { // coin counter
+		System.out.println("Counter of coins (vals as of 8/25/16)\r\n");
 
+		Scanner scanner = new Scanner(System.in); // scope bs
+		String[] coinPrompts = {"μBtc (bits)","Dogecoin (DOGE)","Litecoin (LTC)","Feathercoin (FTC)","Monero (XMR)","Ethereum (ETH)","US Dollar Coin","US Half Dollar","US Quarter","US Dime","US Nickel","US Penny","Canadian 2 dollars","Canadian 1 dollar","Canadian 50 cent","Canadian 25 cent","Canadian 10 cent","Canadian 5 cent","Canadian 1 cent","Pound Sterling 2 Pounds","Pound Sterling 1 Pound","Pound Sterling 50 Pence","Pound Sterling 20 Pence","Pound Sterling 10 Pence","Pound Sterling 5 Pence","Pound Sterling 2 Pence","Pound Sterling 1 Penny","Euro 2 Euros","Euro 1 Euro","Euro 50 cent","Euro 20 cent","Euro 10 cent","Euro 5 cent","Euro 2 cent","Euro 1 cent"};
+		Double[] coinVals = {0.00057498,0.0002238,3.80466658,0.01188745,3.85127893,11.25359174,1.0,0.5,0.25,0.10,0.05,0.01,1.54674256,0.77337128,0.38668564,0.19334282,0.077337128,0.038668564,0.0077337128,2.6381,1.31905,0.659525,0.26381,0.131905,0.0659525,0.026381,0.0131905,2.25633,1.128165,0.5640825,0.225633,0.1128165,0.05640825,0.0225633,0.01128165};
+		int[] numCoins = new int[coinPrompts.length];
+
+		double totalUSD=0;
+
+		System.out.println("Please specify how many of each you have (empty for none), must be rounded:\n");
+
+		for (int i=0; i<coinPrompts.length; i++) {
+			System.out.print(coinPrompts[i]+": ");
+			String rawInput = scanner.nextLine();
+			// System.out.print(rawInput.replace("\\", " --linebreak-- "));
+			if (rawInput.isEmpty()) {
+				numCoins[i] = 0;
+			} else {
+				try {
+					numCoins[i] = Integer.parseInt(rawInput);
+					totalUSD += coinVals[i]*numCoins[i];
+				} catch (java.lang.NumberFormatException e) {
+					System.out.println("Invalid entry, please retry");
+					i--;
+				}
+			}
+		}
+
+		System.out.print("\NYou have:\n$"+totalUSD+" US Dollars\n฿"+(totalUSD*0.001741008)+"BTC");
 
 		enterToCont();
 	}

@@ -942,9 +942,9 @@ public class A2_001_WarmUps_Overcash {
 		System.out.println("Counter of coins (vals as of 8/25/16)\r\n");
 
 		Scanner scanner = new Scanner(System.in); // scope bs
-		String[] coinPrompts = {"μBtc (bits)","Dogecoin (DOGE)","Litecoin (LTC)","Feathercoin (FTC)","Monero (XMR)","Ethereum (ETH)","US Dollar Coin","US Half Dollar","US Quarter","US Dime","US Nickel","US Penny","Canadian 2 dollars","Canadian 1 dollar","Canadian 50 cent","Canadian 25 cent","Canadian 10 cent","Canadian 5 cent","Canadian 1 cent","Pound Sterling 2 Pounds","Pound Sterling 1 Pound","Pound Sterling 50 Pence","Pound Sterling 20 Pence","Pound Sterling 10 Pence","Pound Sterling 5 Pence","Pound Sterling 2 Pence","Pound Sterling 1 Penny","Euro 2 Euros","Euro 1 Euro","Euro 50 cent","Euro 20 cent","Euro 10 cent","Euro 5 cent","Euro 2 cent","Euro 1 cent"};
+		String[] coinPrompts = {"μBtc (bits)","Dogecoin (DOGE)","Litecoin (LTC)","Feathercoin (FTC)","Monero (XMR)","Ethereum (ETH)","US Dollar Coin","US Half Dollar","US Quarter","US Dime","US Nickel","US Penny","Canadian 2 dollars","Canadian 1 dollar","Canadian 50 cent","Canadian 25 cent","Canadian 10 cent","Canadian 5 cent","Canadian 1 cent","Great British Pound 2 Pounds","Great British Pound 1 Pound","Great British Pound 50 Pence","Great British Pound 20 Pence","Great British Pound 10 Pence","Great British Pound 5 Pence","Great British Pound 2 Pence","Great British Pound 1 Penny","Euro 2 Euros","Euro 1 Euro","Euro 50 cent","Euro 20 cent","Euro 10 cent","Euro 5 cent","Euro 2 cent","Euro 1 cent"};
 		Double[] coinVals = {0.00057498,0.0002238,3.80466658,0.01188745,3.85127893,11.25359174,1.0,0.5,0.25,0.10,0.05,0.01,1.54674256,0.77337128,0.38668564,0.19334282,0.077337128,0.038668564,0.0077337128,2.6381,1.31905,0.659525,0.26381,0.131905,0.0659525,0.026381,0.0131905,2.25633,1.128165,0.5640825,0.225633,0.1128165,0.05640825,0.0225633,0.01128165};
-		int[] numCoins = new int[coinPrompts.length];
+		int[] numCoins = new int[coinPrompts.length]; // not actually used
 
 		double totalUSD=0;
 
@@ -953,7 +953,6 @@ public class A2_001_WarmUps_Overcash {
 		for (int i=0; i<coinPrompts.length; i++) {
 			System.out.print(coinPrompts[i]+": ");
 			String rawInput = scanner.nextLine();
-			// System.out.print(rawInput.replace("\\", " --linebreak-- "));
 			if (rawInput.isEmpty()) {
 				numCoins[i] = 0;
 			} else {
@@ -967,13 +966,15 @@ public class A2_001_WarmUps_Overcash {
 			}
 		}
 
-		System.out.print("\NYou have:\n$"+totalUSD+" US Dollars\n฿"+(totalUSD*0.001741008)+"BTC");
+		System.out.print("\nYou have:\n$"+totalUSD+" US Dollars\n฿"+(totalUSD*0.001741008)+" BTC\n$"+(totalUSD*1.29304)+" CAD\n£"+(totalUSD*0.75823635)+" GBP\n€"+(totalUSD*0.88613204)+" EUR");
 
 		enterToCont();
 	}
 
-	public static void do14() {
-
+	public static void do14() { // Phone num generator
+		System.out.println("Phone number gen\r\n");
+		
+		System.out.print("\n("+random.nextInt(7)+random.nextInt(7)+random.nextInt(7)+") "+random.nextInt(743)+"-"+random.nextInt(9999));
 
 		enterToCont();
 	}

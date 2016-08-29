@@ -15,7 +15,8 @@ public class A2_006_ArrayStuff_Overcash {
 		display(arr);
 		System.out.println();
 		// rotateLeft(arr);
-		rotateRight(arr);
+		// rotateRight(arr);
+		rotate(arr, 2);
 	}
 
 	public static void display(int[] a) {
@@ -52,6 +53,25 @@ public class A2_006_ArrayStuff_Overcash {
 
 		// put first in end
 		a[0] = lastElement;
+		System.out.print("Result ");
+		display(a);
+	}
+
+	public static void rotate(int[] a, int d) {
+		System.out.print("Rotating the Following "+d+" steps ");
+		display(a);
+
+		for (int n=0; n < d; n++) {
+			int firstElement = a[0];
+
+			for (int i=0; i<a.length-1; i++) {
+				a[i] = a[i+1];
+			}
+
+			// put first in end
+			a[a.length-1] = firstElement;
+		}
+
 		System.out.print("Result ");
 		display(a);
 	}

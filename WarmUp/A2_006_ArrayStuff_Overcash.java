@@ -19,7 +19,7 @@ public class A2_006_ArrayStuff_Overcash {
 		// rotateRight(arr);
 		// rotate(arr, 2);
 		// moveLargestToLast(arr);
-		display(createWedge(17));
+		display(moveLeft(arr, 2, 4));
 	}
 
 	public static void display(int[] a) {
@@ -127,8 +127,7 @@ public class A2_006_ArrayStuff_Overcash {
 	public static int[] shuffle(int[] a) {
 		// Fisher-Yates shuffle
 		Random rnd = new Random();
-		for (int i = a.length - 1; i > 0; i--)
-		{
+		for (int i = a.length - 1; i > 0; i--) {
 			int index = rnd.nextInt(i + 1);
 			int aa = a[index];
 			a[index] = a[i];
@@ -183,6 +182,14 @@ public class A2_006_ArrayStuff_Overcash {
 			arr[i] = i+1;
 			arr[arr.length-1-i] = i+1;
 		}
+		return arr;
+	}
+
+	public static int[] moveLeft(int[] arr, int start, int end) {
+		for (int i=start; i<=end; i++) {
+			arr[i-1] = arr[i];
+		}
+		arr[end] = arr[end-1];
 		return arr;
 	}
 }

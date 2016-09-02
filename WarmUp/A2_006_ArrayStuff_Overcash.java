@@ -30,7 +30,6 @@ public class A2_006_ArrayStuff_Overcash {
 		System.out.print("Rotating the Following ");
 		display(a);
 
-
 		int firstElement = a[0];
 
 		for (int i=0; i<a.length-1; i++) {	// 1 less, we dont want an out of bounds exception
@@ -125,9 +124,9 @@ public class A2_006_ArrayStuff_Overcash {
 	}
 
 	public static int[] shuffle(int[] a) {
-		// Fisher-Yates shuffle
+		// Fisher-Yates shuffle (swappity swap)
 		Random rnd = new Random();
-		for (int i = a.length - 1; i > 0; i--) {
+		for (int i = a.length - 1; i >= 0; i--) {
 			int index = rnd.nextInt(i + 1);
 			int aa = a[index];
 			a[index] = a[i];

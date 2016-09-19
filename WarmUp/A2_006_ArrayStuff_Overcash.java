@@ -19,7 +19,7 @@ public class A2_006_ArrayStuff_Overcash {
 		// rotateRight(arr);
 		// rotate(arr, 2);
 		// moveLargestToLast(arr);
-		display(moveLeft(arr, 2, 4));
+		display(add(arr, 2, 4));
 	}
 
 	public static void display(int[] a) {
@@ -190,5 +190,17 @@ public class A2_006_ArrayStuff_Overcash {
 		}
 		arr[end] = arr[end-1];
 		return arr;
+	}
+
+	public static int[] add(int[] a, int pos, int val) {
+		int[] newArr = new int[a.length+1];
+		for (int i=0; i<pos; i++) {
+			newArr[i] = a[i];
+		}
+		newArr[pos] = val;
+		for (int i=pos; i<a.length; i++) {
+			newArr[i+1] = a[i];
+		}
+		return newArr;
 	}
 }

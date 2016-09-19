@@ -203,4 +203,18 @@ public class A2_006_ArrayStuff_Overcash {
 		}
 		return newArr;
 	}
+
+	public static boolean remove(int[] a, int pos) {
+		if (pos >= a.length) {
+			return false;
+		}
+		int[] newArr = new int[a.length-1];
+		for (int i=0; i<pos; i++) {
+			newArr[i] = a[i];
+		}
+		for (int i=pos; i<a.length-1; i++) {
+			newArr[i] = a[i+1];
+		}
+		return true;
+	}
 }

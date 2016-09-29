@@ -25,7 +25,7 @@ public class Ch06_Dogs2Human_student {
 		double doggoAge = 13.0 - (16.0/3.0);
 		doggoAge += dogYears*(16.0/3.0);
 
-		return (int)doggoAge;
+		return (int)(doggoAge+0.5);
 	}
 
 }

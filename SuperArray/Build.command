@@ -1,0 +1,1 @@
+set -x;cd APCOMPSCI/SuperArray;rm *.class;javac SuperArray.java;javac Driver.java;java Driver;

@@ -201,6 +201,8 @@ public class SuperArray {
 			dullArray[i] = tmpArray[i];
 		}
 
+		dullArray[size-1] = null; // save memory, make old value null
+
 		size--;
 
 		return returnString;

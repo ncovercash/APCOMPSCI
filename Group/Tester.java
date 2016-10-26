@@ -23,10 +23,10 @@ public class Tester {
 		System.out.println(dateTest1);
 		System.out.println(dateTest2);
 		System.out.println(dateTest3.getMonth());
-		System.out.println(dateTest3.getDay());
+		System.out.println(dateTest3.getDate());
 		System.out.println(dateTest3.getYear());
 		dateTest3.setMonth(2);
-		dateTest3.setDay(15);
+		dateTest3.setDate(15);
 		dateTest3.setYear(1998);
 		System.out.println(dateTest3);
 		System.out.println();

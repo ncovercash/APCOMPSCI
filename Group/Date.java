@@ -1,16 +1,16 @@
 import java.lang.Math;
 public class Date {
-	private int month, day, year;
+	private int month, date, year;
 
 	public Date() {
 		month = (int)(Math.random()*12)+1;
-		day = (int)(Math.random()*30)+1;
+		date = (int)(Math.random()*30)+1;
 		year = (int)(Math.random()*2017);
 	}
 
 	public Date(int m, int d, int y) {
 		month = m;
-		day = d;
+		date = d;
 		year = y;
 	}
 
@@ -18,8 +18,8 @@ public class Date {
 		return month;
 	}
 
-	public int getDay() {
-		return day;
+	public int getDate() {
+		return date;
 	}
 
 	public int getYear() {
@@ -30,8 +30,8 @@ public class Date {
 		month = newMonth;
 	}
 
-	public void setDay(int newDay) {
-		day = newDay;
+	public void setDate(int newDate) {
+		date = newDate;
 	}
 
 	public void setYear(int newYear) {
@@ -47,10 +47,10 @@ public class Date {
 
 		returnString += "/";
 		
-		if (day < 10) {
+		if (date < 10) {
 			returnString += "0";
 		}
-		returnString += day;
+		returnString += date;
 
 		returnString += "/";
 

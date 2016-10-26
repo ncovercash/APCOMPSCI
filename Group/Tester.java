@@ -31,5 +31,33 @@ public class Tester {
 		System.out.println(dateTest3);
 		System.out.println();
 		System.out.println();
+
+		Address addressTest1, addressTest2, addressTest3;
+		addressTest1 = new Address();
+		addressTest2 = new Address(1400, "Old Tamah Rd", "Irmo", "South Carolina", 29063);
+		addressTest3 = new Address(1400, "Old Tamah Rd", "Irmo", "South Carolina", 29063);
+		System.out.println(addressTest1);
+		System.out.println(addressTest2);
+		System.out.println(addressTest3.getHouseNumber());
+		System.out.println(addressTest3.getStreetName());
+		System.out.println(addressTest3.getCity());
+		System.out.println(addressTest3.getState());
+		System.out.println(addressTest3.getZipCode());
+		addressTest3.setHouseNumber(2);
+		addressTest3.setCity("Lexington");
+		System.out.println(addressTest3);
+		System.out.println();
+		System.out.println();
+
+		Person personTest1, personTest2, personTest3;
+		personTest1 = new Person();
+		personTest2 = new Person(nameTest2, addressTest1, dateTest1, 27);
+		System.out.println(personTest1);
+		System.out.println(personTest2);
+		System.out.println(personTest2.getBirthday());
+		personTest2.setBirthday(new Date());
+		System.out.println(personTest2);
+		System.out.println();
+		System.out.println();
 	}
 }

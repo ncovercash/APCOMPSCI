@@ -12,6 +12,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+        self.view.layer.backgroundColor = [NSColor greenColor].CGColor;
+        self.view.potatotextField.adjustsFontSizeToFitWidth = true
 
     // Do any additional setup after loading the view.
 }

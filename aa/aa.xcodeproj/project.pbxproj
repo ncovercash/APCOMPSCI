@@ -14,6 +14,7 @@
 		8AE6484C1D9D62EA003068AD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8AE6484A1D9D62EA003068AD /* Main.storyboard */; };
 		8AE648571D9D62EB003068AD /* aaTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AE648561D9D62EB003068AD /* aaTests.m */; };
 		8AE648621D9D62EB003068AD /* aaUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8AE648611D9D62EB003068AD /* aaUITests.m */; };
+		8AE648701D9D6341003068AD /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AE6486F1D9D6341003068AD /* AppKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		8AE6485D1D9D62EB003068AD /* aaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = aaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8AE648611D9D62EB003068AD /* aaUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = aaUITests.m; sourceTree = "<group>"; };
 		8AE648631D9D62EB003068AD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8AE6486F1D9D6341003068AD /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8AE648701D9D6341003068AD /* AppKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +82,7 @@
 		8AE648331D9D62EA003068AD = {
 			isa = PBXGroup;
 			children = (
+				8AE6486F1D9D6341003068AD /* AppKit.framework */,
 				8AE6483E1D9D62EA003068AD /* aa */,
 				8AE648551D9D62EB003068AD /* aaTests */,
 				8AE648601D9D62EB003068AD /* aaUITests */,

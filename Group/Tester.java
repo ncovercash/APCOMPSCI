@@ -59,5 +59,18 @@ public class Tester {
 		System.out.println(personTest2);
 		System.out.println();
 		System.out.println();
+
+		Group groupTest1;
+		groupTest1 = new Group();
+		groupTest1.add(new Person());
+		System.out.println(groupTest1);
+		groupTest1.add(new Person());
+		groupTest1.add(new Person());
+		groupTest1.add(new Person());
+		groupTest1.add(new Person());
+		groupTest1.add(personTest1);
+		System.out.println(groupTest1);
+		groupTest1.remove(personTest1);
+		System.out.println(groupTest1);
 	}
 }

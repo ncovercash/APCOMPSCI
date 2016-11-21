@@ -1,6 +1,6 @@
 import java.lang.Math;
-public class Date {
-	private int month, date, year;
+public class Date implements Comparable<Date> {
+	protected int month, date, year;
 
 	public Date() {
 		month = (int)(Math.random()*12)+1;
@@ -66,5 +66,35 @@ public class Date {
 		returnString += year;
 
 		return returnString;
+	}
+
+	public int compareTo(Date d) {
+		if (this.year != d.year) {
+			return this.year - d.year;
+		}
+		if (this.month != d.month) {
+			return this.month - d.month;
+		}
+		if (this.date != d.date) {
+			return this.date - d.date;
+		}
+		return 0;
+	}
+
+	public static int compare(Date c, Date d) {
+		if (c.year != d.year) {
+			return c.year - d.year;
+		}
+		if (c.month != d.month) {
+			return c.month - d.month;
+		}
+		if (c.date != d.date) {
+			return c.date - d.date;
+		}
+		return 0;
+	}
+
+	public boolean equals(Date d) {
+		return this.compareTo(d) == 0;
 	}
 }

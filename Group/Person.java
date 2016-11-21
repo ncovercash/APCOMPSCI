@@ -1,10 +1,10 @@
 import java.lang.Math;
 
-public class Person {
-	private Name name;
-	private Address address;
-	private Date birthday;
-	private int age;
+public class Person implements Comparable<Person> {
+	protected Name name;
+	protected Address address;
+	protected Date birthday;
+	protected int age;
 
 	public Person() {
 		name = new Name();
@@ -54,5 +54,35 @@ public class Person {
 
 	public void setAge(int newVal) {
 		age = newVal;
+	}
+
+	public int compareTo(Person d) {
+		if (this.name.compareTo(d.name) != 0) {
+			return this.name.compareTo(d.name);
+		}
+		if (this.birthday.compareTo(d.birthday) != 0) {
+			return this.birthday.compareTo(d.birthday);
+		}
+		if (this.address.compareTo(d.address) != 0) {
+			return this.address.compareTo(d.address);
+		}
+		return 0;
+	}
+
+	public static int compare(Person c, Person d) {
+		if (c.name.compareTo(d.name) != 0) {
+			return c.name.compareTo(d.name);
+		}
+		if (c.birthday.compareTo(d.birthday) != 0) {
+			return c.birthday.compareTo(d.birthday);
+		}
+		if (c.address.compareTo(d.address) != 0) {
+			return c.address.compareTo(d.address);
+		}
+		return 0;
+	}
+
+	public boolean equals(Person in) {
+		return this.compareTo(in) == 0;
 	}
 }

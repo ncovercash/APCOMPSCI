@@ -1,9 +1,13 @@
+import java.util.ArrayList;
+
 public class Tester {
 	public static void main(String[] args) {
-		Name nameTest1, nameTest2, nameTest3;
+		Name nameTest1, nameTest2, nameTest3, nameTest4, nameTest5;
 		nameTest1 = new Name();
 		nameTest2 = new Name("l", "f", "m");
 		nameTest3 = new Name("l", "f", "m");
+		nameTest4 = new Name("a", "a", "a");
+		nameTest5 = new Name("a", "a", "b");
 		System.out.println(nameTest1);
 		System.out.println(nameTest2);
 		System.out.println(nameTest3.getLastName());
@@ -13,6 +17,17 @@ public class Tester {
 		nameTest3.setFirstName("b");
 		nameTest3.setMiddleName("c");
 		System.out.println(nameTest3);
+		System.out.println(nameTest1);
+		System.out.println(nameTest4);
+		System.out.println(nameTest1.compareTo(nameTest4));
+		System.out.println(nameTest1.equals(nameTest4));
+		System.out.println(Name.compare(nameTest1, nameTest4));
+		System.out.println(nameTest2.compareTo(nameTest2));
+		System.out.println(nameTest2.equals(nameTest2));
+		System.out.println(Name.compare(nameTest2, nameTest2));
+		System.out.println(nameTest4.compareTo(nameTest5));
+		System.out.println(nameTest4.equals(nameTest5));
+		System.out.println(Name.compare(nameTest4, nameTest5));
 		System.out.println();
 		System.out.println();
 
@@ -27,8 +42,16 @@ public class Tester {
 		System.out.println(dateTest3.getYear());
 		dateTest3.setMonth(2);
 		dateTest3.setDate(15);
-		dateTest3.setYear(1998);
+		dateTest3.setYear(2001);
+		System.out.println(dateTest1);
+		System.out.println(dateTest2);
 		System.out.println(dateTest3);
+		System.out.println(dateTest2.compareTo(dateTest1));
+		System.out.println(dateTest2.compareTo(dateTest2));
+		System.out.println(dateTest2.compareTo(dateTest3));
+		System.out.println(Date.compare(dateTest2, dateTest3));
+		System.out.println(dateTest2.equals(dateTest2));
+		System.out.println(dateTest2.equals(dateTest3));
 		System.out.println();
 		System.out.println();
 
@@ -72,5 +95,8 @@ public class Tester {
 		System.out.println(groupTest1);
 		groupTest1.remove(personTest1);
 		System.out.println(groupTest1);
+		groupTest1.insertionSort();
+		System.out.println(groupTest1);
+
 	}
 }

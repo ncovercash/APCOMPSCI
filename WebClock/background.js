@@ -4,6 +4,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
       'width': 400,
       'height': 500
     },
+  frame: { type: "none" },
     'alwaysOnTop': true
   });
 });

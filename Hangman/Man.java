@@ -18,6 +18,10 @@ public class Man {
 	public static double[] HEAD_BOUNDS = {0.3,0,0.4,0.3}; // x,y,w,h (all % of overall)
 	protected double HEAD_HEIGHT, HEAD_WIDTH, HEAD_X, HEAD_Y;
 
+	// body
+	public static double[] BODY_BOUNDS = {0.5,0.3,0,0.4}; // x,y,w,h (all % of overall)
+	protected double BODY_HEIGHT, BODY_WIDTH, BODY_X, BODY_Y;
+
 	// dont skip leg day
 	public static double[] LEG_BOUNDS = {0,0.7,1,0.3}; // x,y,w,h (all % of overall)
 	protected double LEG_HEIGHT, LEG_WIDTH, LEG_X, LEG_Y;
@@ -66,8 +70,8 @@ public class Man {
 		head[0] = new FramedOval(HEAD_X, HEAD_Y, HEAD_WIDTH, HEAD_HEIGHT, canvas);
 		// make thick
 		for (int i=1; i<=(thickness/2); i++) {
-			head[i] = new FramedOval(HEAD_X-(i/2+1), HEAD_Y-(i/2+1), HEAD_WIDTH+i, HEAD_HEIGHT+i, canvas);
-			head[i] = new FramedOval(HEAD_X+(i/2+1), HEAD_Y+(i/2+1), HEAD_WIDTH-i, HEAD_HEIGHT-i, canvas);
+			head[i] = new FramedOval(HEAD_X-(i), HEAD_Y-(i), HEAD_WIDTH+(2*i), HEAD_HEIGHT+(2*i), canvas);
+			head[i] = new FramedOval(HEAD_X+(i), HEAD_Y+(i), HEAD_WIDTH-(2*i), HEAD_HEIGHT-(2*i), canvas);
 		}
 
 		// draw legs
@@ -94,6 +98,28 @@ public class Man {
 			leg2[i] = new Line(LEG_X+(LEG_WIDTH/2)-(i/2+1), LEG_Y+(i/2+1), LEG_X+LEG_WIDTH-(i/2+1), LEG_Y+LEG_HEIGHT+(i/2+1), canvas);
 			leg1[i+1] = new Line(LEG_X-(i/2+1), LEG_Y+LEG_HEIGHT-(i/2+1), LEG_X+(LEG_WIDTH/2)-(i/2+1), LEG_Y-(i/2+1), canvas);
 			leg2[i+1] = new Line(LEG_X+(LEG_WIDTH/2)+(i/2+1), LEG_Y-(i/2+1), LEG_X+LEG_WIDTH+(i/2+1), LEG_Y+LEG_HEIGHT-(i/2+1), canvas);
+		}
+
+		// draw body
+		BODY_WIDTH = 0; // kept for compatibility
+		BODY_HEIGHT = PADDED_HEIGHT*BODY_BOUNDS[3];
+		BODY_X = PADDED_X+(PADDED_WIDTH*BODY_BOUNDS[0]);
+		BODY_Y = PADDED_Y+(PADDED_HEIGHT*BODY_BOUNDS[1]);
+		
+		if (DEBUG) {
+			// show bounds
+			new FramedRect(BODY_X, BODY_Y, BODY_WIDTH, BODY_HEIGHT, canvas);
+		}
+
+		// init arrs
+		body = new Line[(thickness/2)*2+1];
+
+		body[0] = new Line(BODY_X, BODY_Y, BODY_X, BODY_Y+BODY_HEIGHT, canvas);
+
+		// thicc
+		for (int i=1; i<=(thickness/2)*2; i+=2) {
+			body[i] = new Line(BODY_X+(i/2+1), BODY_Y, BODY_X+(i/2+1), BODY_Y+BODY_HEIGHT, canvas);
+			body[i+1] = new Line(BODY_X-(i/2+1), BODY_Y, BODY_X-(i/2+1), BODY_Y+BODY_HEIGHT, canvas);
 		}
 	}
 }

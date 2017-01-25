@@ -93,6 +93,9 @@ public class Driver extends WindowController {
 
 	public void loss() {
 		alive = false;
+		for (int i=0; i<answer.length(); i++) {
+			blanks[i].setLetter(answer.substring(i, i+1));
+		}
 		Text l = new Text("L", 0, 0, canvas);
 		l.setFontSize(800);
 		l.moveTo(canvas.getWidth()/2-l.getWidth()/2, canvas.getHeight()/2-l.getHeight()/2);

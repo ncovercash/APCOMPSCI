@@ -102,6 +102,7 @@ public class Driver extends WindowController {
 		Text instruct = new Text("Click to restart", 0, 0, canvas);
 		instruct.setFontSize(40);
 		instruct.moveTo(canvas.getWidth()/2-instruct.getWidth()/2, l.getY()+880);
+		throw new ErrorBehindKeyboard();
 	}
 
 	public void onMouseClick(Location p) {

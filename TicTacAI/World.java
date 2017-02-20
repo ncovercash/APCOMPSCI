@@ -83,9 +83,10 @@ public class World extends ActiveObject {
 		for (int i=0; i<main.availableSpots().length; i++) {
 			TicTacToeBoard tmpBoard = new TicTacToeBoard(main);
 			tmpBoard.setSpot(main.availableSpots()[i], 2);
-			System.out.println(main.availableSpots()[i] + " returns a score of "+genAIMoves(tmpBoard, 1));
-			if (genAIMoves(tmpBoard, 1) > highestScore) {
-				highestScore = genAIMoves(tmpBoard, 1);
+			int score=genAIMoves(tmpBoard, 1);
+			System.out.println(main.availableSpots()[i] + " returns a score of "+score);
+			if (score > highestScore) {
+				highestScore = score;
 				bestSpot = main.availableSpots()[i];
 			}
 		}
@@ -97,8 +98,12 @@ public class World extends ActiveObject {
 	}
 
 	public int genAIMoves(TicTacToeBoard board, int player) {
-		// return 0;
-		if (board.availableSpots().length == 1) {
+		if (board.availableSpots().length == 1 || board.winState() != 0) {
+			if (board.winState() == 2) {
+				return 10;
+			} else if (board.winState() == 1) {
+				return -10;
+			}
 			board.setSpot(board.availableSpots()[0], player);
 			if (board.winState() == 2) {
 				return 10;

@@ -52,20 +52,21 @@ void 0!==c?null===c?void r.removeAttr(a,b):e&&"set"in e&&void 0!==(d=e.set(a,c,b
 
 function startTime() {
     var today = new Date();
-    var h = today.getHours();
+    var h = today.getHours()%12;
+    h = h ? h : 12;
     var m = today.getMinutes();
     var s = today.getSeconds();
     m = checkTime(m);
     s = checkTime(s);
     document.getElementById('txt').innerHTML =
     "" + h + ":" + m + "" + "";
-    jQuery("#txt").css('zoom', '100%');
     jQuery("#txt").fitText();
-    jQuery("#txt").css('zoom', '300%');
+    var zoomUpperTxt = 3;
+    $("#txt").css("font-size", $("#txt").css("font-size").replace("px", "")*zoomUpperTxt);
     $("#txt2").text(days[new Date().getDay()] + ", " + month[new Date().getMonth()] + " " + new Date().getDate())
-    jQuery("#txt2").css('zoom', '100%');
     jQuery("#txt2").fitText();
-    jQuery("#txt2").css('zoom', '80%');
+    var zoomLowerText = 0.8;
+    $("#txt2").css("font-size", $("#txt2").css("font-size").replace("px", "")*zoomLowerText);
     var t = setTimeout(startTime, 2000);
 }
 function checkTime(i) {

@@ -1,0 +1,3607 @@
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.ActiveObjectEventInterface;
+
+abstract class SuspendEvent
+implements ActiveObjectEventInterface {
+    private boolean resumeCalled = false;
+
+    SuspendEvent() {
+    }
+
+    public void resume() {
+        SuspendEvent suspendEvent = this;
+        synchronized (suspendEvent) {
+            this.resumeCalled = true;
+            this.notifyAll();
+        }
+    }
+
+    public boolean isExpired() {
+        SuspendEvent suspendEvent = this;
+        synchronized (suspendEvent) {
+            return this.resumeCalled;
+        }
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.applet.Applet;
+import java.applet.AudioClip;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.LayoutManager;
+import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.swing.JApplet;
+import objectdraw.ActiveObject;
+import objectdraw.ControllerFrame;
+import objectdraw.ControllerStub;
+import objectdraw.TerminateEvent;
+import objectdraw.UnintSuspendEvent;
+
+public class Controller
+extends JApplet {
+    static final int DEFAULT_WINDOW_WIDTH = 400;
+    static final int DEFAULT_WINDOW_HEIGHT = 400;
+    private UnintSuspendEvent stopper;
+
+    public static String getVersion() {
+        return "Version 1.1.1, released February 2005";
+    }
+
+    protected void setup() {
+        this.getContentPane().setLayout(new BorderLayout());
+        ActiveObject.initializeEventList();
+    }
+
+    public void init() {
+        this.setup();
+        this.validate();
+        this.begin();
+        this.validate();
+    }
+
+    public void begin() {
+    }
+
+    public synchronized Image getImage(String path) {
+        Image im;
+        try {
+            im = path.substring(0, 4).equals("http") ? this.getImage(new URL(path)) : this.getImage(this.getClass().getResource(path));
+        }
+        catch (MalformedURLException e) {
+            System.out.println("Invalid Image path - " + path);
+            return null;
+        }
+        return im;
+    }
+
+    public synchronized AudioClip getAudio(String path) {
+        AudioClip sound;
+        try {
+            sound = path.substring(0, 4).equals("http") ? this.getAudioClip(new URL(path)) : this.getAudioClip(this.getClass().getResource(path));
+        }
+        catch (MalformedURLException e) {
+            System.out.println("Invalid Sound path - " + path);
+            return null;
+        }
+        return sound;
+    }
+
+    public static synchronized double getTime() {
+        throw new UnsupportedOperationException("getTime() is no longer supported - use System.currentTimeMillis() instead");
+    }
+
+    public synchronized void start() {
+        if (this.stopper != null) {
+            this.stopper.resume();
+            this.stopper = null;
+        }
+    }
+
+    public synchronized void stop() {
+        if (this.stopper == null) {
+            this.stopper = new UnintSuspendEvent();
+            ActiveObject.scheduleClassEvent(this.stopper);
+        }
+    }
+
+    public synchronized void destroy() {
+        TerminateEvent killer = new TerminateEvent();
+        ActiveObject.scheduleClassEvent(killer);
+    }
+
+    public void placeInFrame(int width, int height) {
+        ControllerFrame myFrame = new ControllerFrame(this.getName(), this, width, height);
+        new objectdraw.ControllerStub(this, myFrame);
+    }
+
+    public void startController(int width, int height) {
+        this.placeInFrame(width, height);
+        this.init();
+        this.start();
+    }
+
+    public void startController() {
+        this.startController(400, 400);
+    }
+
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        this.validate();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import objectdraw.Controller;
+
+class ControllerFrame
+extends JFrame
+implements ActionListener {
+    private Controller myController;
+    private JMenuItem quitItem;
+
+    public ControllerFrame(String title, Controller myController, int width, int height) {
+        super(title);
+        this.myController = myController;
+        JMenuBar menubar = new JMenuBar();
+        JMenu file = new JMenu("File", true);
+        menubar.add(file);
+        this.quitItem = new JMenuItem("Quit");
+        file.add(this.quitItem);
+        this.setJMenuBar(menubar);
+        this.quitItem.addActionListener(this);
+        this.getContentPane().add("Center", myController);
+        this.setSize(width, height);
+        this.setVisible(true);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() instanceof JMenuItem && e.getSource() == this.quitItem) {
+            this.dispose();
+        }
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.Arc;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Resizable2DInterface;
+
+public class FramedArc
+extends Arc
+implements Resizable2DInterface {
+    public FramedArc(Location origin, double width, double height, double startAngle, double arcAngle, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, startAngle, arcAngle, canvas);
+    }
+
+    public FramedArc(double x, double y, double width, double height, double startAngle, double arcAngle, DrawingCanvas canvas) {
+        super(x, y, width, height, startAngle, arcAngle, canvas);
+    }
+
+    public FramedArc(Location p0, Location p1, double startAngle, double arcAngle, DrawingCanvas canvas) {
+        super(p0, p1, startAngle, arcAngle, canvas);
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+        g.drawArc((int)Math.round(this.x), (int)Math.round(this.y), (int)Math.round(this.width), (int)Math.round(this.height), (int)this.startAngle, (int)this.arcAngle);
+    }
+
+    public String toString() {
+        return "Framed" + super.toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.DrawableInterface;
+import objectdraw.Location;
+
+public interface Drawable1DInterface
+extends DrawableInterface {
+    public Location getStart();
+
+    public Location getEnd();
+
+    public void setStart(Location var1);
+
+    public void setStart(double var1, double var3);
+
+    public void setEnd(Location var1);
+
+    public void setEnd(double var1, double var3);
+
+    public void setEndPoints(Location var1, Location var2);
+
+    public void setEndPoints(double var1, double var3, double var5, double var7);
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Oval;
+import objectdraw.Resizable2DInterface;
+
+public class FilledOval
+extends Oval
+implements Resizable2DInterface {
+    public FilledOval(Location origin, double width, double height, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, canvas);
+    }
+
+    public FilledOval(double x, double y, double width, double height, DrawingCanvas canvas) {
+        super(x, y, width, height, canvas);
+    }
+
+    public FilledOval(Location p0, Location p1, DrawingCanvas canvas) {
+        super(p0, p1, canvas);
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+        g.fillOval((int)Math.round(this.x), (int)Math.round(this.y), (int)Math.round(this.width), (int)Math.round(this.height));
+    }
+
+    public String toString() {
+        return "Filled" + super.toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+public class RandomIntGenerator {
+    private int max;
+    private int min;
+
+    public RandomIntGenerator(int min, int max) {
+        this.min = min;
+        this.max = max;
+    }
+
+    public int nextValue() {
+        return this.min + (int)(Math.random() * (double)(this.max - this.min + 1));
+    }
+
+    public String toString() {
+        return "RandomIntGenerator with range " + this.min + " to " + this.max;
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.util.Enumeration;
+import java.util.Vector;
+import objectdraw.Drawable;
+
+public class DrawableIterator {
+    private Enumeration elements;
+
+    DrawableIterator(Vector v) {
+        this.elements = v.elements();
+    }
+
+    public boolean hasNext() {
+        return this.elements.hasMoreElements();
+    }
+
+    public Drawable next() {
+        return (Drawable)this.elements.nextElement();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Point;
+import java.io.Serializable;
+
+public class Location
+implements Serializable {
+    private double x;
+    private double y;
+
+    public Location(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public Location(Location point) {
+        this(point.x, point.y);
+    }
+
+    public Location(Point point) {
+        this(point.x, point.y);
+    }
+
+    public double getX() {
+        return this.x;
+    }
+
+    public double getY() {
+        return this.y;
+    }
+
+    public synchronized double distanceTo(Location point) {
+        return Math.sqrt(Math.pow(point.x - this.x, 2.0) + Math.pow(point.y - this.y, 2.0));
+    }
+
+    public synchronized Point toPoint() {
+        return new Point((int)Math.rint(this.x), (int)Math.rint(this.y));
+    }
+
+    public synchronized void translate(double dx, double dy) {
+        this.x += dx;
+        this.y += dy;
+    }
+
+    public String toString() {
+        return "Location[" + this.x + "," + this.y + "]";
+    }
+
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Location)) {
+            return false;
+        }
+        if (this.x == ((Location)obj).getX() && this.y == ((Location)obj).getY()) {
+            return true;
+        }
+        return false;
+    }
+
+    public int hashCode() {
+        return new Double(1000000.0 * this.x + this.y).hashCode();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.applet.Applet;
+import java.applet.AppletContext;
+import java.applet.AppletStub;
+import java.awt.Frame;
+import java.io.File;
+import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import objectdraw.ControllerContext;
+
+class ControllerStub
+implements AppletStub {
+    private Applet myController;
+    private Frame myFrame;
+    private ControllerContext myContext;
+    private boolean active = true;
+
+    public ControllerStub(Applet controller, Frame window) {
+        this.myFrame = window;
+        this.myController = controller;
+        this.myContext = new ControllerContext(controller);
+        this.myController.setStub(this);
+    }
+
+    public void activate() {
+        this.active = true;
+        this.myController.init();
+        this.myController.start();
+    }
+
+    public AppletContext getAppletContext() {
+        return this.myContext;
+    }
+
+    public URL getDocumentBase() {
+        URL url = null;
+        try {
+            File file = new File(System.getProperty("user.dir"));
+            url = file.toURL();
+        }
+        catch (MalformedURLException e) {
+            System.out.println("Unable to resolve request for document base");
+            url = null;
+        }
+        return url;
+    }
+
+    public URL getCodeBase() {
+        URL url = null;
+        try {
+            File file = new File(System.getProperty("user.dir"));
+            url = file.toURL();
+        }
+        catch (MalformedURLException e) {
+            System.out.println("Unable to resolve request for code base");
+            url = null;
+        }
+        return url;
+    }
+
+    public boolean isActive() {
+        return this.active;
+    }
+
+    public void deactivate() {
+        this.active = false;
+    }
+
+    public String getParameter(String name) {
+        return "";
+    }
+
+    public void appletResize(int width, int height) {
+        this.myFrame.setSize(width, height);
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Rect;
+import objectdraw.Resizable2DInterface;
+
+public class FramedRect
+extends Rect
+implements Resizable2DInterface {
+    public FramedRect(Location origin, double width, double height, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, canvas);
+    }
+
+    public FramedRect(double x, double y, double width, double height, DrawingCanvas canvas) {
+        super(x, y, width, height, canvas);
+    }
+
+    public FramedRect(Location p0, Location p1, DrawingCanvas canvas) {
+        super(p0, p1, canvas);
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+        g.drawRect((int)Math.round(this.x), (int)Math.round(this.y), (int)Math.round(this.width), (int)Math.round(this.height));
+    }
+
+    public String toString() {
+        return "Framed" + super.toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import javax.swing.JComponent;
+import objectdraw.CanvasManager;
+import objectdraw.DrawableIterator;
+import objectdraw.DrawingCanvas;
+
+public class JDrawingCanvas
+extends JComponent
+implements DrawingCanvas,
+ComponentListener {
+    public static final Dimension DEFAULT_PREFERRED_SIZE = new Dimension(400, 400);
+    public final int REPAINT_DELAY = 50;
+    private CanvasManager canvasContent;
+    private Dimension preferred_dim;
+
+    public JDrawingCanvas() {
+        this(DEFAULT_PREFERRED_SIZE);
+    }
+
+    public JDrawingCanvas(int width, int height) {
+        this(new Dimension(width, height));
+    }
+
+    public JDrawingCanvas(Dimension size) {
+        this.canvasContent = new CanvasManager(size, this);
+        this.preferred_dim = size;
+        this.setRequestFocusEnabled(true);
+    }
+
+    public CanvasManager getCanvasContent() {
+        return this.canvasContent;
+    }
+
+    public Dimension getPreferredSize() {
+        return this.preferred_dim;
+    }
+
+    public void repaint() {
+        super.repaint(50);
+    }
+
+    public void clear() {
+        this.canvasContent.clear();
+    }
+
+    public void paint(Graphics g) {
+        this.canvasContent.paint(g);
+    }
+
+    public void update(Graphics g) {
+        this.paint(g);
+    }
+
+    public void enableAutoRepaint() {
+        this.canvasContent.enableAutoRepaint();
+    }
+
+    public void disableAutoRepaint() {
+        this.canvasContent.disableAutoRepaint();
+    }
+
+    public void componentResized(ComponentEvent e) {
+        this.repaint();
+    }
+
+    public void componentMoved(ComponentEvent e) {
+    }
+
+    public void componentShown(ComponentEvent e) {
+    }
+
+    public void componentHidden(ComponentEvent e) {
+    }
+
+    public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+        this.canvasContent.setStateChanged();
+        return super.imageUpdate(img, infoflags, x, y, width, height);
+    }
+
+    public synchronized DrawableIterator getDrawableIterator() {
+        return this.canvasContent.getDrawableIterator();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.ActiveObjectEventInterface;
+
+final class TerminateEvent
+implements ActiveObjectEventInterface {
+    TerminateEvent() {
+    }
+
+    public void execute() {
+        throw new ThreadDeath();
+    }
+
+    public boolean isExpired() {
+        return false;
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.SuspendEvent;
+
+final class UnintSuspendEvent
+extends SuspendEvent {
+    UnintSuspendEvent() {
+    }
+
+    /*
+     * Enabled aggressive block sorting
+     * Enabled unnecessary exception pruning
+     * Enabled aggressive exception aggregation
+     */
+    public void execute() {
+        UnintSuspendEvent unintSuspendEvent = this;
+        synchronized (unintSuspendEvent) {
+            do {
+                if (this.isExpired()) {
+                    return;
+                }
+                try {
+                    this.wait();
+                }
+                catch (InterruptedException interruptedException) {
+                    // empty catch block
+                }
+            } while (true);
+        }
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.WindowController;
+
+public class FrameWindowController
+extends WindowController {
+    private boolean inited = false;
+
+    public FrameWindowController() {
+        this.placeInFrame(400, 400);
+    }
+
+    public void init() {
+        this.inited = true;
+        super.init();
+    }
+
+    public void paint(Graphics g) {
+        if (!this.inited) {
+            this.init();
+            this.start();
+        }
+        super.paint(g);
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.applet.Applet;
+import java.applet.AudioClip;
+import java.awt.BorderLayout;
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.LayoutManager;
+import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import objectdraw.AWTControllerFrame;
+import objectdraw.ActiveObject;
+import objectdraw.ControllerStub;
+import objectdraw.TerminateEvent;
+import objectdraw.UnintSuspendEvent;
+
+public class AWTController
+extends Applet {
+    static final int DEFAULT_WINDOW_WIDTH = 400;
+    static final int DEFAULT_WINDOW_HEIGHT = 400;
+    private UnintSuspendEvent stopper;
+    private boolean beginCalled = false;
+
+    public void begin() {
+    }
+
+    public synchronized Image getImage(String path) {
+        Image im;
+        try {
+            im = path.substring(0, 4).equals("http") ? this.getImage(new URL(path)) : this.getImage(this.getClass().getResource(path));
+        }
+        catch (MalformedURLException e) {
+            System.out.println("Invalid Image path - " + path);
+            return null;
+        }
+        return im;
+    }
+
+    protected synchronized AudioClip getAudio(String path) {
+        AudioClip sound;
+        try {
+            sound = path.substring(0, 4).equals("http") ? this.getAudioClip(new URL(path)) : this.getAudioClip(this.getClass().getResource(path));
+        }
+        catch (MalformedURLException e) {
+            System.out.println("Invalid Sound path - " + path);
+            return null;
+        }
+        return sound;
+    }
+
+    public static synchronized double getTime() {
+        throw new UnsupportedOperationException("getTime() is no longer supported - use System.currentTimeMillis() instead");
+    }
+
+    protected void setup() {
+        this.setLayout(new BorderLayout());
+    }
+
+    public void init() {
+        this.setup();
+        this.validate();
+        ActiveObject.initializeEventList();
+        this.begin();
+        this.validate();
+    }
+
+    synchronized boolean callBegin() {
+        this.begin();
+        this.beginCalled = true;
+        return this.beginCalled;
+    }
+
+    public synchronized void start() {
+        if (this.stopper != null) {
+            this.stopper.resume();
+            this.stopper = null;
+        }
+    }
+
+    public synchronized void stop() {
+        if (this.stopper == null) {
+            this.stopper = new UnintSuspendEvent();
+            ActiveObject.scheduleClassEvent(this.stopper);
+        }
+    }
+
+    public synchronized void destroy() {
+        TerminateEvent killer = new TerminateEvent();
+        ActiveObject.scheduleClassEvent(killer);
+    }
+
+    public void placeInFrame(int width, int height) {
+        AWTControllerFrame myFrame = new AWTControllerFrame(this.getName(), this, width, height);
+        new objectdraw.ControllerStub(this, myFrame);
+    }
+
+    public void startController(int width, int height) {
+        this.placeInFrame(width, height);
+        this.init();
+        this.start();
+    }
+
+    public void startController() {
+        this.startController(400, 400);
+    }
+
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        this.validate();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Color;
+import java.awt.geom.Arc2D;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Rectangular;
+
+abstract class Arc
+extends Rectangular {
+    protected double startAngle = 0.0;
+    protected double arcAngle = 0.0;
+
+    public Arc(Location origin, double width, double height, double startAngle, double arcAngle, DrawingCanvas c) {
+        super(origin, width, height);
+        this.startAngle = startAngle;
+        this.arcAngle = arcAngle;
+        this.addToCanvas(c);
+    }
+
+    public Arc(double x, double y, double width, double height, double startAngle, double arcAngle, DrawingCanvas c) {
+        this(new Location(x, y), width, height, startAngle, arcAngle, c);
+    }
+
+    public Arc(Location p0, Location p1, double startAngle, double arcAngle, DrawingCanvas c) {
+        super(p0, p1);
+        this.startAngle = startAngle;
+        this.arcAngle = arcAngle;
+        this.addToCanvas(c);
+    }
+
+    public double getStartAngle() {
+        return this.startAngle;
+    }
+
+    public double getArcAngle() {
+        return this.arcAngle;
+    }
+
+    public synchronized void setStartAngle(double startAngle) {
+        this.startAngle = startAngle;
+        this.setStateChanged();
+    }
+
+    public synchronized void setArcAngle(double arcAngle) {
+        this.arcAngle = arcAngle;
+        this.setStateChanged();
+    }
+
+    public boolean contains(Location point) {
+        Arc2D.Double shape = new Arc2D.Double(this.x, this.y, this.width, this.height, this.startAngle, this.arcAngle, 2);
+        return shape.contains(point.getX(), point.getY());
+    }
+
+    public String toString() {
+        return "Arc at " + this.x + "," + this.y + " width:" + this.width + " height:" + this.height + " startangle:" + this.startAngle + " arcangle:" + this.arcAngle + " color:" + this.getColor().toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.Bounds;
+import objectdraw.Drawable2D;
+import objectdraw.Location;
+
+abstract class Resizable2D
+extends Drawable2D {
+    Resizable2D() {
+    }
+
+    public synchronized void moveTo(Location point) {
+        Bounds b = this.getBounds();
+        b.setLocation(point);
+        this.setBounds(b);
+        this.setStateChanged();
+    }
+
+    public synchronized void move(double dx, double dy) {
+        Bounds b = this.getBounds();
+        b.translate(dx, dy);
+        this.setBounds(b);
+        this.setStateChanged();
+    }
+
+    public abstract void setSize(double var1, double var3);
+
+    public abstract void setWidth(double var1);
+
+    public abstract void setHeight(double var1);
+
+    abstract void setBounds(Bounds var1);
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.io.Serializable;
+import objectdraw.CanvasManager;
+import objectdraw.DrawableInterface;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+
+abstract class Drawable
+implements Serializable,
+DrawableInterface {
+    protected transient CanvasManager canvasContent;
+    protected Color color = Color.black;
+    protected boolean shown = true;
+
+    public void addToCanvas(DrawingCanvas c) {
+        c.getCanvasContent().addToCanvas(this);
+    }
+
+    synchronized void setCanvasContent(CanvasManager cc) {
+        if (this.canvasContent != null) {
+            throw new IllegalStateException("Drawable object is already on a canvas");
+        }
+        this.canvasContent = cc;
+    }
+
+    public void removeFromCanvas() {
+        if (this.canvasContent != null) {
+            this.canvasContent.removeFromCanvas(this);
+        } else {
+            throw new IllegalStateException("Drawable object is not on canvas");
+        }
+    }
+
+    protected void clearCanvasContent() {
+        this.canvasContent = null;
+    }
+
+    public DrawingCanvas getCanvas() {
+        return this.canvasContent != null ? this.canvasContent.getCanvas() : null;
+    }
+
+    protected void setStateChanged() {
+        if (this.canvasContent != null) {
+            this.canvasContent.setStateChanged();
+        }
+    }
+
+    synchronized void draw(Graphics g) {
+        g.setColor(this.color);
+    }
+
+    public synchronized void hide() {
+        this.shown = false;
+        this.setStateChanged();
+    }
+
+    public synchronized void show() {
+        this.shown = true;
+        this.setStateChanged();
+    }
+
+    public boolean isHidden() {
+        return !this.shown;
+    }
+
+    public void moveTo(Location point) {
+        this.moveTo(point.getX(), point.getY());
+    }
+
+    public synchronized void moveTo(double x, double y) {
+        this.moveTo(new Location(x, y));
+    }
+
+    public abstract void move(double var1, double var3);
+
+    public abstract boolean contains(Location var1);
+
+    public synchronized void setColor(Color c) {
+        this.color = c;
+        this.setStateChanged();
+    }
+
+    public Color getColor() {
+        return this.color;
+    }
+
+    public void sendForward() {
+        if (this.canvasContent != null) {
+            this.canvasContent.sendObjectForward(this);
+        } else {
+            throw new IllegalStateException("Drawble object not currently displayed on canvas");
+        }
+    }
+
+    public void sendBackward() {
+        if (this.canvasContent != null) {
+            this.canvasContent.sendObjectBackward(this);
+        } else {
+            throw new IllegalStateException("Drawble object not currently displayed on canvas");
+        }
+    }
+
+    public void sendToFront() {
+        if (this.canvasContent != null) {
+            this.canvasContent.sendObjectToFront(this);
+        } else {
+            throw new IllegalStateException("Drawble object not currently displayed on canvas");
+        }
+    }
+
+    public void sendToBack() {
+        if (this.canvasContent != null) {
+            this.canvasContent.sendObjectToBack(this);
+        } else {
+            throw new IllegalStateException("Drawble object not currently displayed on canvas");
+        }
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Component;
+import java.awt.Event;
+import java.awt.Frame;
+import java.awt.Menu;
+import java.awt.MenuBar;
+import java.awt.MenuItem;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import objectdraw.AWTController;
+
+class AWTControllerFrame
+extends Frame
+implements WindowListener {
+    private AWTController controller;
+
+    public AWTControllerFrame(String title, AWTController controller, int width, int height) {
+        super(title);
+        this.controller = controller;
+        MenuBar menubar = new MenuBar();
+        Menu file = new Menu("File", true);
+        menubar.add(file);
+        file.add("Quit");
+        this.setMenuBar(menubar);
+        this.addWindowListener(this);
+        this.add((Component)controller, "Center");
+        this.setSize(width, height);
+        this.setVisible(true);
+    }
+
+    public boolean action(Event e, Object arg) {
+        String label;
+        if (e.target instanceof MenuItem && (label = (String)arg).equals("Quit")) {
+            System.exit(0);
+        }
+        return false;
+    }
+
+    public void windowActivated(WindowEvent e) {
+    }
+
+    public void windowClosed(WindowEvent e) {
+    }
+
+    public void windowClosing(WindowEvent e) {
+        this.controller.stop();
+        this.controller.destroy();
+        this.remove(this.controller);
+        this.dispose();
+    }
+
+    public void windowDeactivated(WindowEvent e) {
+    }
+
+    public void windowDeiconified(WindowEvent e) {
+    }
+
+    public void windowIconified(WindowEvent e) {
+    }
+
+    public void windowOpened(WindowEvent e) {
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.DrawableInterface;
+import objectdraw.Location;
+
+public interface Drawable2DInterface
+extends DrawableInterface {
+    public double getWidth();
+
+    public double getHeight();
+
+    public double getX();
+
+    public double getY();
+
+    public Location getLocation();
+
+    public boolean overlaps(Drawable2DInterface var1);
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Canvas;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import objectdraw.CanvasManager;
+import objectdraw.DrawableIterator;
+import objectdraw.DrawingCanvas;
+
+public class AWTDrawingCanvas
+extends Canvas
+implements DrawingCanvas,
+ComponentListener {
+    public static final Dimension DEFAULT_PREFERRED_SIZE = new Dimension(400, 400);
+    public final int REPAINT_DELAY = 50;
+    private Dimension preferred_dim;
+    private CanvasManager canvasContent;
+
+    public AWTDrawingCanvas() {
+        this(DEFAULT_PREFERRED_SIZE);
+    }
+
+    public AWTDrawingCanvas(int width, int height) {
+        this(new Dimension(width, height));
+    }
+
+    public AWTDrawingCanvas(Dimension size) {
+        this.canvasContent = new CanvasManager(size, this);
+        this.preferred_dim = size;
+    }
+
+    public CanvasManager getCanvasContent() {
+        return this.canvasContent;
+    }
+
+    public Dimension getPreferredSize() {
+        return this.preferred_dim;
+    }
+
+    public void repaint() {
+        super.repaint(50);
+    }
+
+    public synchronized void clear() {
+        this.canvasContent.clear();
+    }
+
+    public synchronized void paint(Graphics g) {
+        this.canvasContent.paint(g);
+    }
+
+    public synchronized void update(Graphics g) {
+        this.paint(g);
+    }
+
+    public synchronized void enableAutoRepaint() {
+        this.canvasContent.enableAutoRepaint();
+    }
+
+    public synchronized void disableAutoRepaint() {
+        this.canvasContent.disableAutoRepaint();
+    }
+
+    public int getWidth() {
+        return this.getSize().width;
+    }
+
+    public int getHeight() {
+        return this.getSize().height;
+    }
+
+    public void componentResized(ComponentEvent e) {
+        this.repaint();
+    }
+
+    public void componentMoved(ComponentEvent e) {
+    }
+
+    public void componentShown(ComponentEvent e) {
+    }
+
+    public void componentHidden(ComponentEvent e) {
+    }
+
+    public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+        this.canvasContent.setStateChanged();
+        return super.imageUpdate(img, infoflags, x, y, width, height);
+    }
+
+    public synchronized DrawableIterator getDrawableIterator() {
+        return this.canvasContent.getDrawableIterator();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Resizable2DInterface;
+import objectdraw.RoundedRect;
+
+public class FramedRoundedRect
+extends RoundedRect
+implements Resizable2DInterface {
+    public FramedRoundedRect(Location origin, double width, double height, double arcWidth, double arcHeight, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, arcWidth, arcHeight, canvas);
+    }
+
+    public FramedRoundedRect(double x, double y, double width, double height, double arcWidth, double arcHeight, DrawingCanvas canvas) {
+        super(x, y, width, height, arcWidth, arcHeight, canvas);
+    }
+
+    public FramedRoundedRect(Location p0, Location p1, double arcWidth, double arcHeight, DrawingCanvas canvas) {
+        super(p0, p1, arcWidth, arcHeight, canvas);
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+        g.drawRoundRect((int)Math.round(this.x), (int)Math.round(this.y), (int)Math.round(this.width), (int)Math.round(this.height), (int)this.arcWidth, (int)this.arcHeight);
+    }
+
+    public String toString() {
+        return "Framed" + super.toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Color;
+import java.awt.geom.Ellipse2D;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Rectangular;
+
+abstract class Oval
+extends Rectangular {
+    public Oval(Location origin, double width, double height, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, canvas);
+    }
+
+    public Oval(double x, double y, double width, double height, DrawingCanvas canvas) {
+        super(x, y, width, height);
+        this.addToCanvas(canvas);
+    }
+
+    public Oval(Location p0, Location p1, DrawingCanvas canvas) {
+        this(p0, p1.getX() - p0.getX(), p1.getY() - p0.getY(), canvas);
+    }
+
+    public boolean contains(Location point) {
+        Ellipse2D.Double shape = new Ellipse2D.Double(this.x, this.y, this.width, this.height);
+        return shape.contains(point.getX(), point.getY());
+    }
+
+    public String toString() {
+        return "Oval at " + this.x + "," + this.y + " width:" + this.width + " height:" + this.height + " color:" + this.getColor().toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.ComponentListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import objectdraw.AWTDrawingCanvas;
+import objectdraw.ActiveObject;
+import objectdraw.CanvasManager;
+import objectdraw.DrawingCanvas;
+import objectdraw.TerminateEvent;
+
+public class AWTFrameCanvas
+extends AWTDrawingCanvas
+implements DrawingCanvas,
+ComponentListener,
+WindowListener {
+    private Dimension preferred_dim;
+    private CanvasManager canvasContent;
+    private Frame frame;
+    public static final Dimension DEFAULT_PREFERRED_SIZE = new Dimension(400, 400);
+
+    public AWTFrameCanvas() {
+        this(DEFAULT_PREFERRED_SIZE);
+    }
+
+    public AWTFrameCanvas(int width, int height) {
+        this(new Dimension(width, height));
+    }
+
+    public AWTFrameCanvas(Dimension size) {
+        this.canvasContent = new CanvasManager(size, this);
+        this.preferred_dim = size;
+        ActiveObject.initializeEventList();
+        this.frame = new Frame();
+        this.frame.add("Center", this);
+        this.frame.setVisible(true);
+        this.frame.pack();
+    }
+
+    public void setSize(Dimension d) {
+        this.preferred_dim = d;
+        this.frame.setSize(this.preferred_dim);
+        this.frame.pack();
+    }
+
+    public void setSize(int width, int height) {
+        this.setSize(new Dimension(width, height));
+    }
+
+    public Dimension getPreferredSize() {
+        return this.preferred_dim;
+    }
+
+    public void windowClosing(WindowEvent e) {
+        TerminateEvent killer = new TerminateEvent();
+        ActiveObject.scheduleClassEvent(killer);
+        this.frame.dispose();
+        System.exit(0);
+    }
+
+    public void windowActivated(WindowEvent e) {
+    }
+
+    public void windowClosed(WindowEvent e) {
+    }
+
+    public void windowDeactivated(WindowEvent e) {
+    }
+
+    public void windowDeiconified(WindowEvent e) {
+    }
+
+    public void windowIconified(WindowEvent e) {
+    }
+
+    public void windowOpened(WindowEvent e) {
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import objectdraw.AWTController;
+import objectdraw.AWTDrawingCanvas;
+import objectdraw.AWTInitializer;
+import objectdraw.AWTWindowControllerListener;
+import objectdraw.ActiveObject;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+
+public class AWTWindowController
+extends AWTController {
+    protected DrawingCanvas canvas = new AWTDrawingCanvas();
+
+    public void init() {
+        super.setup();
+        this.add((Component)((Object)this.canvas), "Center");
+        this.canvas.repaint();
+        ActiveObject.initializeEventList();
+        this.validate();
+        new objectdraw.AWTInitializer(this);
+    }
+
+    synchronized boolean callBegin() {
+        boolean beginWasCalled = false;
+        if (this.canvas.getGraphics() != null && this.canvas.getWidth() > 0 && this.canvas.getHeight() > 0) {
+            beginWasCalled = super.callBegin();
+            AWTWindowControllerListener myListener = new AWTWindowControllerListener(this, this.canvas);
+            this.canvas.addMouseListener(myListener);
+            this.canvas.addMouseMotionListener(myListener);
+        }
+        return beginWasCalled;
+    }
+
+    public void begin() {
+    }
+
+    public void onMouseClick(Location point) {
+    }
+
+    public void onMousePress(Location point) {
+    }
+
+    public void onMouseRelease(Location point) {
+    }
+
+    public void onMouseEnter(Location point) {
+    }
+
+    public void onMouseExit(Location point) {
+    }
+
+    public void onMouseDrag(Location point) {
+    }
+
+    public void onMouseMove(Location point) {
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import objectdraw.AWTWindowController;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+
+class AWTWindowControllerListener
+implements MouseListener,
+MouseMotionListener {
+    private AWTWindowController controller;
+    private DrawingCanvas canvas;
+
+    public AWTWindowControllerListener(AWTWindowController controller, DrawingCanvas canvas) {
+        this.controller = controller;
+        this.canvas = canvas;
+    }
+
+    public void mouseClicked(MouseEvent e) {
+        this.canvas.requestFocusInWindow();
+        this.controller.onMouseClick(new Location(e.getPoint()));
+    }
+
+    public void mousePressed(MouseEvent e) {
+        this.controller.onMousePress(new Location(e.getPoint()));
+    }
+
+    public void mouseReleased(MouseEvent e) {
+        this.controller.onMouseRelease(new Location(e.getPoint()));
+    }
+
+    public void mouseEntered(MouseEvent e) {
+        this.controller.onMouseEnter(new Location(e.getPoint()));
+    }
+
+    public void mouseExited(MouseEvent e) {
+        this.controller.onMouseExit(new Location(e.getPoint()));
+    }
+
+    public void mouseDragged(MouseEvent e) {
+        this.controller.onMouseDrag(new Location(e.getPoint()));
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        this.controller.onMouseMove(new Location(e.getPoint()));
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.event.ComponentListener;
+import java.awt.image.ImageObserver;
+import java.util.Vector;
+import objectdraw.Drawable;
+import objectdraw.DrawableInterface;
+import objectdraw.DrawableIterator;
+import objectdraw.DrawingCanvas;
+
+class CanvasManager {
+    public static final Dimension DEFAULT_PREFERRED_SIZE = new Dimension(400, 400);
+    private DrawingCanvas canvas;
+    private Dimension preferred_dim;
+    private Vector objects = new Vector();
+    private Image buffer;
+    private Dimension bufSize;
+    private Graphics buffer_gc;
+    private boolean stateChanged = false;
+    private boolean enableRepaint = true;
+    private boolean repaintPending = false;
+
+    public CanvasManager(Dimension size, DrawingCanvas canvas) {
+        this.preferred_dim = size;
+        this.canvas = canvas;
+        ((Component)((Object)canvas)).setForeground(Color.black);
+        ((Component)((Object)canvas)).setBackground(Color.white);
+        canvas.addComponentListener(canvas);
+    }
+
+    protected DrawingCanvas getCanvas() {
+        return this.canvas;
+    }
+
+    synchronized void addToCanvas(Drawable d) {
+        d.setCanvasContent(this);
+        this.objects.addElement(d);
+        this.setStateChanged();
+    }
+
+    synchronized void removeFromCanvas(Drawable d) {
+        if (!this.objects.removeElement(d)) {
+            throw new IllegalStateException("Drawble object not currently displayed on canvas");
+        }
+        d.clearCanvasContent();
+        this.setStateChanged();
+    }
+
+    synchronized void clear() {
+        int i = 0;
+        while (i < this.objects.size()) {
+            ((Drawable)this.objects.elementAt(i)).clearCanvasContent();
+            ++i;
+        }
+        this.objects.removeAllElements();
+        this.setStateChanged();
+    }
+
+    void setStateChanged() {
+        this.stateChanged = true;
+        if (this.enableRepaint && !this.repaintPending) {
+            this.repaintPending = true;
+            this.canvas.repaint();
+        }
+    }
+
+    synchronized void paint(Graphics g) {
+        this.repaintPending = false;
+        if (this.buffer == null || !this.bufSize.equals(this.canvas.getSize())) {
+            this.stateChanged = true;
+            this.createBuffer();
+        }
+        if (this.stateChanged) {
+            this.redraw();
+        }
+        g.drawImage(this.buffer, 0, 0, this.canvas);
+    }
+
+    private synchronized void redraw() {
+        this.stateChanged = false;
+        this.buffer_gc.setColor(((Component)((Object)this.canvas)).getBackground());
+        this.buffer_gc.fillRect(0, 0, this.canvas.getSize().width, this.canvas.getSize().height);
+        int i = 0;
+        while (i < this.objects.size()) {
+            Drawable nextDrawable = (Drawable)this.objects.elementAt(i);
+            if (!nextDrawable.isHidden()) {
+                nextDrawable.draw(this.buffer_gc);
+            }
+            ++i;
+        }
+    }
+
+    public synchronized void enableAutoRepaint() {
+        this.enableRepaint = true;
+        if (this.stateChanged) {
+            this.setStateChanged();
+        }
+    }
+
+    public synchronized void disableAutoRepaint() {
+        this.enableRepaint = false;
+    }
+
+    synchronized void sendObjectToFront(Drawable object) {
+        if (!this.objects.removeElement(object)) {
+            throw new IllegalStateException("Drawble object not currently displayed on canvas");
+        }
+        this.objects.addElement(object);
+        this.setStateChanged();
+    }
+
+    synchronized void sendObjectToBack(Drawable object) {
+        if (!this.objects.removeElement(object)) {
+            throw new IllegalStateException("Drawble object not currently displayed on canvas");
+        }
+        this.objects.insertElementAt(object, 0);
+        this.setStateChanged();
+    }
+
+    synchronized void sendObjectForward(Drawable object) {
+        int index = this.objects.indexOf(object);
+        if (index >= 0) {
+            if (index < this.objects.size() - 1) {
+                DrawableInterface next = (DrawableInterface)this.objects.elementAt(index + 1);
+                this.objects.setElementAt(next, index);
+                this.objects.setElementAt(object, index + 1);
+                this.setStateChanged();
+            }
+        } else {
+            throw new IllegalStateException("Drawble object not currently displayed on canvas");
+        }
+    }
+
+    synchronized void sendObjectBackward(Drawable object) {
+        int index = this.objects.indexOf(object);
+        if (index > 0) {
+            DrawableInterface previous = (DrawableInterface)this.objects.elementAt(index - 1);
+            this.objects.setElementAt(previous, index);
+            this.objects.setElementAt(object, index - 1);
+            this.setStateChanged();
+        } else if (index < 0) {
+            throw new IllegalStateException("Drawble object not currently displayed on canvas");
+        }
+    }
+
+    public synchronized DrawableIterator getDrawableIterator() {
+        return new DrawableIterator(this.objects);
+    }
+
+    private synchronized void createBuffer() {
+        Image tempbuffer = null;
+        this.bufSize = this.canvas.getSize();
+        if (this.bufSize.width > 0 && this.bufSize.height > 0) {
+            tempbuffer = this.canvas.createImage(this.canvas.getWidth(), this.canvas.getHeight());
+        }
+        this.buffer = tempbuffer;
+        if (this.buffer != null) {
+            this.buffer_gc = this.buffer.getGraphics();
+        }
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import objectdraw.Controller;
+import objectdraw.DrawingCanvas;
+import objectdraw.JDrawingCanvas;
+import objectdraw.Location;
+import objectdraw.WindowControllerListener;
+
+public class WindowController
+extends Controller {
+    protected DrawingCanvas canvas = new JDrawingCanvas();
+
+    public void init() {
+        super.setup();
+        this.getContentPane().add((Component)((Object)this.canvas), "Center");
+        this.validate();
+        this.canvas.repaint();
+        while (this.canvas.getWidth() == 0) {
+            Thread.yield();
+        }
+        this.begin();
+        this.validate();
+        WindowControllerListener listener = new WindowControllerListener(this, this.canvas);
+        this.canvas.addMouseListener(listener);
+        this.canvas.addMouseMotionListener(listener);
+    }
+
+    public void begin() {
+    }
+
+    public void onMouseClick(Location point) {
+    }
+
+    public void onMousePress(Location point) {
+    }
+
+    public void onMouseRelease(Location point) {
+    }
+
+    public void onMouseEnter(Location point) {
+    }
+
+    public void onMouseExit(Location point) {
+    }
+
+    public void onMouseDrag(Location point) {
+    }
+
+    public void onMouseMove(Location point) {
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.WindowController;
+
+class WindowControllerListener
+implements MouseListener,
+MouseMotionListener {
+    private WindowController controller;
+    private DrawingCanvas canvas;
+
+    public WindowControllerListener(WindowController controller, DrawingCanvas canvas) {
+        this.controller = controller;
+        this.canvas = canvas;
+    }
+
+    public void mouseClicked(MouseEvent e) {
+        try {
+            this.canvas.requestFocusInWindow();
+        }
+        catch (AbstractMethodError err) {
+            this.canvas.requestFocus();
+        }
+        this.controller.onMouseClick(new Location(e.getPoint()));
+    }
+
+    public void mousePressed(MouseEvent e) {
+        this.controller.onMousePress(new Location(e.getPoint()));
+    }
+
+    public void mouseReleased(MouseEvent e) {
+        this.controller.onMouseRelease(new Location(e.getPoint()));
+    }
+
+    public void mouseEntered(MouseEvent e) {
+        this.controller.onMouseEnter(new Location(e.getPoint()));
+    }
+
+    public void mouseExited(MouseEvent e) {
+        this.controller.onMouseExit(new Location(e.getPoint()));
+    }
+
+    public void mouseDragged(MouseEvent e) {
+        this.controller.onMouseDrag(new Location(e.getPoint()));
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        this.controller.onMouseMove(new Location(e.getPoint()));
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Color;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Rectangular;
+
+abstract class Rect
+extends Rectangular {
+    public Rect(Location origin, double width, double height, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, canvas);
+    }
+
+    public Rect(double x, double y, double width, double height, DrawingCanvas canvas) {
+        super(x, y, width, height);
+        this.addToCanvas(canvas);
+    }
+
+    public Rect(Location p0, Location p1, DrawingCanvas canvas) {
+        super(p0, p1);
+        this.addToCanvas(canvas);
+    }
+
+    public String toString() {
+        return "Rect at " + this.x + "," + this.y + " width:" + this.width + " height:" + this.height + " color:" + this.getColor().toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Color;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+
+public interface DrawableInterface {
+    public void hide();
+
+    public void show();
+
+    public void addToCanvas(DrawingCanvas var1);
+
+    public void removeFromCanvas();
+
+    public DrawingCanvas getCanvas();
+
+    public boolean isHidden();
+
+    public void moveTo(Location var1);
+
+    public void moveTo(double var1, double var3);
+
+    public void move(double var1, double var3);
+
+    public void setColor(Color var1);
+
+    public Color getColor();
+
+    public void sendForward();
+
+    public void sendBackward();
+
+    public void sendToFront();
+
+    public void sendToBack();
+
+    public boolean contains(Location var1);
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.MediaTracker;
+import java.awt.Point;
+import java.awt.image.ImageObserver;
+import objectdraw.Bounds;
+import objectdraw.CanvasManager;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Resizable2D;
+import objectdraw.Resizable2DInterface;
+
+public class VisibleImage
+extends Resizable2D
+implements Resizable2DInterface {
+    protected Image image;
+    private Image scaledImage;
+    private CanvasManager canvasContent;
+    private Location origin;
+    private int scaledWidth = -1;
+    private int scaledHeight = -1;
+    private int actualWidth = -1;
+    private int actualHeight = -1;
+    protected DrawingCanvas canvas;
+    private int drawTries = 0;
+    private static final int INITTRIES = 10;
+    private int nextTries = 10;
+
+    public VisibleImage(Image image, Location origin, DrawingCanvas canvas) {
+        if (image == null) {
+            throw new NullPointerException("Image parameter to VisibleImage constructor is undefined");
+        }
+        if (canvas == null) {
+            throw new NullPointerException("DrawingCanvas parameter to VisibleImage constructor is undefined");
+        }
+        this.origin = new Location(origin);
+        this.image = image;
+        canvas.prepareImage(this.image, canvas);
+        this.actualHeight = image.getHeight(canvas);
+        this.actualWidth = image.getWidth(canvas);
+        this.addToCanvas(canvas);
+    }
+
+    public VisibleImage(Image image, double x, double y, DrawingCanvas canvas) {
+        this(image, new Location(x, y), canvas);
+    }
+
+    public VisibleImage(Image image, Location origin, double width, double height, DrawingCanvas canvas) {
+        this(image, origin, canvas);
+        this.setBounds(new Bounds(origin, width, height));
+    }
+
+    public VisibleImage(Image image, double x, double y, double width, double height, DrawingCanvas canvas) {
+        this(image, new Location(x, y), width, height, canvas);
+    }
+
+    public synchronized void addToCanvas(DrawingCanvas canvas) {
+        this.canvas = canvas;
+        super.addToCanvas(canvas);
+    }
+
+    synchronized void draw(Graphics g) {
+        if (this.origin != null) {
+            super.draw(g);
+            Point loc = this.origin.toPoint();
+            if (this.scaledWidth != -1) {
+                if (this.scaledImage.getWidth(this.canvas) == -1) {
+                    if (this.drawTries <= 0) {
+                        this.scaledImage = this.image.getScaledInstance(this.scaledWidth, this.scaledHeight, 1);
+                        this.canvas.prepareImage(this.scaledImage, this.canvas);
+                        this.drawTries = this.nextTries;
+                        this.nextTries += this.nextTries;
+                    } else {
+                        this.nextTries = 10;
+                    }
+                }
+                --this.drawTries;
+                g.drawImage(this.scaledImage, loc.x, loc.y, this.canvas);
+            } else {
+                g.drawImage(this.image, loc.x, loc.y, this.canvas);
+            }
+        }
+    }
+
+    public synchronized void moveTo(Location location) {
+        this.origin = new Location(location);
+        this.setStateChanged();
+    }
+
+    public synchronized void move(double dx, double dy) {
+        this.origin.translate(dx, dy);
+        this.setStateChanged();
+    }
+
+    public Image getImage() {
+        return this.image;
+    }
+
+    public void setImage(Image newImage) {
+        if (newImage == null) {
+            throw new NullPointerException("Parameter to setImage is undefined");
+        }
+        this.image = newImage;
+        this.canvas.prepareImage(this.image, this.canvas);
+        this.actualHeight = this.image.getHeight(this.canvas);
+        this.actualWidth = this.image.getWidth(this.canvas);
+        if (this.scaledWidth != -1 && this.scaledHeight != -1) {
+            this.setSize(this.scaledWidth, this.scaledHeight);
+        }
+        this.setStateChanged();
+    }
+
+    void setBounds(Bounds b) {
+        this.origin = b.getLocation();
+        this.setSize(b.getWidth(), b.getHeight());
+    }
+
+    public void setSize(double width, double height) {
+        this.scaledWidth = (int)Math.rint(width);
+        this.scaledHeight = (int)Math.rint(height);
+        this.scaledImage = this.image.getScaledInstance(this.scaledWidth, this.scaledHeight, 1);
+        this.canvas.prepareImage(this.scaledImage, this.canvas);
+        this.nextTries = 10;
+        this.drawTries = 10;
+        this.nextTries += this.nextTries;
+        this.setStateChanged();
+    }
+
+    public synchronized void setWidth(double width) {
+        this.loadImage();
+        if (this.scaledHeight == -1) {
+            this.setSize(width, this.actualHeight);
+        } else {
+            this.setSize(width, this.scaledHeight);
+        }
+    }
+
+    public synchronized void setHeight(double height) {
+        this.loadImage();
+        if (this.scaledWidth == -1) {
+            this.setSize(this.actualWidth, height);
+        } else {
+            this.setSize(this.scaledWidth, height);
+        }
+    }
+
+    synchronized Bounds getBounds() {
+        if (this.scaledWidth != -1 && this.scaledHeight != -1) {
+            return new Bounds(this.origin, this.scaledWidth, this.scaledHeight);
+        }
+        this.loadImage();
+        if (this.scaledWidth != -1) {
+            this.scaledHeight = this.actualHeight;
+        } else if (this.scaledHeight != -1) {
+            this.scaledWidth = this.actualWidth;
+        } else {
+            return new Bounds(this.origin, this.actualWidth, this.actualHeight);
+        }
+        return new Bounds(this.origin, this.scaledWidth, this.scaledHeight);
+    }
+
+    public double getWidth() {
+        return this.getBounds().getWidth();
+    }
+
+    public double getHeight() {
+        return this.getBounds().getHeight();
+    }
+
+    private void loadImage() {
+        MediaTracker mt = new MediaTracker((Component)((Object)this.canvas));
+        mt.addImage(this.image, 0);
+        while (this.image.getWidth(this.canvas) == -1) {
+            try {
+                mt.waitForAll();
+            }
+            catch (InterruptedException interruptedException) {
+                // empty catch block
+            }
+        }
+        this.actualHeight = this.image.getHeight(this.canvas);
+        this.actualWidth = this.image.getWidth(this.canvas);
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.Controller;
+
+public class FrameController
+extends Controller {
+    private boolean inited = false;
+
+    public FrameController() {
+        this.placeInFrame(400, 400);
+    }
+
+    public void init() {
+        this.inited = true;
+        super.init();
+    }
+
+    public void paint(Graphics g) {
+        if (!this.inited) {
+            this.init();
+            this.start();
+        }
+        super.paint(g);
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.SuspendEvent;
+
+final class InterruptableSuspendEvent
+extends SuspendEvent {
+    InterruptableSuspendEvent() {
+    }
+
+    public void execute() {
+        InterruptableSuspendEvent interruptableSuspendEvent = this;
+        synchronized (interruptableSuspendEvent) {
+            try {
+                if (!this.isExpired()) {
+                    this.wait();
+                }
+            }
+            catch (InterruptedException interruptedException) {
+                // empty catch block
+            }
+        }
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.ActiveObject;
+import objectdraw.ActiveObjectEventInterface;
+
+public class ActiveObject
+extends Thread {
+    private final EventDeque EVENT_DEQUE = new EventDeque();
+    private final EventIterator CLASS_EVENT_ITERATOR = CLASS_EVENT_LIST.getEventIterator();
+    private static EventList CLASS_EVENT_LIST;
+
+    public ActiveObject() {
+        ActiveObject.introspect();
+    }
+
+    public ActiveObject(String name) {
+        super(name);
+        ActiveObject.introspect();
+    }
+
+    public ActiveObject(ThreadGroup group, Runnable target, String name) {
+        super(group, target, name);
+        ActiveObject.introspect();
+    }
+
+    void scheduleEvent(ActiveObjectEventInterface event) {
+        this.EVENT_DEQUE.put(event);
+    }
+
+    static void introspect() {
+        Thread CURRENT_THREAD = Thread.currentThread();
+        if (CURRENT_THREAD instanceof ActiveObject) {
+            ActiveObject CURRENT_ACTIVE_OBJECT = (ActiveObject)CURRENT_THREAD;
+            ActiveObjectEventInterface event = CURRENT_ACTIVE_OBJECT.CLASS_EVENT_ITERATOR.getNext();
+            while (event != null) {
+                event.execute();
+                event = CURRENT_ACTIVE_OBJECT.CLASS_EVENT_ITERATOR.getNext();
+            }
+            event = CURRENT_ACTIVE_OBJECT.EVENT_DEQUE.poll();
+            while (event != null) {
+                event.execute();
+                event = CURRENT_ACTIVE_OBJECT.EVENT_DEQUE.poll();
+            }
+        }
+    }
+
+    public static void defer() {
+        ActiveObject.introspect();
+        Thread.yield();
+    }
+
+    public static void yield() {
+        ActiveObject.introspect();
+        Thread.yield();
+    }
+
+    public static void pause(long millis) {
+        ActiveObject.pause(millis, 0);
+    }
+
+    public static void pause(double millis) {
+        ActiveObject.pause(Math.round(millis), 0);
+    }
+
+    public static void pause(long millis, int nano) {
+        ActiveObject.introspect();
+        try {
+            Thread.sleep(millis, nano);
+        }
+        catch (InterruptedException interruptedException) {
+            // empty catch block
+        }
+    }
+
+    public static double getTime() {
+        throw new UnsupportedOperationException("getTime() is no longer supported - use System.currentTimeMillis() instead");
+    }
+
+    static void scheduleClassEvent(ActiveObjectEventInterface event) {
+        CLASS_EVENT_LIST.add(event);
+    }
+
+    static void initializeEventList() {
+        CLASS_EVENT_LIST = new EventList();
+    }
+
+    private static class EventDeque {
+        private EventNode head;
+        private EventNode tail;
+        private final Object PUT_LOCK;
+        private final Object PUSH_LOCK;
+
+        EventDeque() {
+            this.tail = this.head = new EventNode(null);
+            this.PUT_LOCK = new Object();
+            this.PUSH_LOCK = new Object();
+        }
+
+        void put(ActiveObjectEventInterface event) {
+            if (event != null) {
+                EventNode NEW_TAIL = new EventNode(event);
+                Object object = this.PUT_LOCK;
+                synchronized (object) {
+                    this.tail.setNext(NEW_TAIL);
+                    this.tail = NEW_TAIL;
+                }
+            } else {
+                throw new NullPointerException();
+            }
+        }
+
+        void push(ActiveObjectEventInterface event) {
+            if (event != null) {
+                EventNode NEW_HEAD = new EventNode(null);
+                Object object = this.PUSH_LOCK;
+                synchronized (object) {
+                    NEW_HEAD.setNext(this.head);
+                    this.head.setEvent(event);
+                    this.head = NEW_HEAD;
+                }
+            } else {
+                throw new NullPointerException();
+            }
+        }
+
+        ActiveObjectEventInterface poll() {
+            Object object = this.PUSH_LOCK;
+            synchronized (object) {
+                ActiveObjectEventInterface event = null;
+                EventNode NEW_HEAD = this.head.getNext();
+                if (NEW_HEAD != null) {
+                    event = NEW_HEAD.getEvent();
+                    NEW_HEAD.setEvent(null);
+                    this.head = NEW_HEAD;
+                }
+                return event;
+            }
+        }
+    }
+
+    private static class EventList {
+        private final EventNode HEAD;
+        private EventNode tail;
+        private final Object ADD_LOCK;
+
+        public EventList() {
+            this.tail = this.HEAD = new EventNode(null);
+            this.ADD_LOCK = new Object();
+        }
+
+        void add(ActiveObjectEventInterface event) {
+            if (event != null) {
+                EventNode NEW_TAIL = new EventNode(event);
+                Object object = this.ADD_LOCK;
+                synchronized (object) {
+                    this.tail.setNext(NEW_TAIL);
+                    this.tail = NEW_TAIL;
+                }
+            } else {
+                throw new NullPointerException();
+            }
+            if (Math.random() < 0.1) {
+                this.trim();
+            }
+        }
+
+        EventIterator getEventIterator() {
+            return new EventIterator(this){
+                private EventNode currentNode;
+                final /* synthetic */ EventList this$1;
+
+                public ActiveObjectEventInterface getNext() {
+                    ActiveObjectEventInterface activeObjectEventInterface;
+                    EventNode nextNode = this.currentNode.getNext();
+                    if (nextNode == null) {
+                        activeObjectEventInterface = null;
+                    } else {
+                        this.currentNode = nextNode;
+                        activeObjectEventInterface = this.currentNode.getEvent();
+                    }
+                    return activeObjectEventInterface;
+                }
+            };
+        }
+
+        private void trim() {
+            EventNode currentNode = this.HEAD;
+            EventNode nextNode = null;
+            EventNode nextUnexpiredNode = null;
+            while (currentNode != null) {
+                nextUnexpiredNode = nextNode = currentNode.getNext();
+                while (nextUnexpiredNode != null && nextUnexpiredNode.getEvent().isExpired()) {
+                    nextUnexpiredNode = nextUnexpiredNode.getNext();
+                }
+                if (nextUnexpiredNode != nextNode && nextUnexpiredNode != null) {
+                    currentNode.setNext(nextUnexpiredNode);
+                }
+                currentNode = nextUnexpiredNode;
+            }
+        }
+
+        static /* synthetic */ EventNode access$0(EventList eventList) {
+            return eventList.HEAD;
+        }
+    }
+
+    private static interface EventIterator {
+        public ActiveObjectEventInterface getNext();
+    }
+
+    private static class EventNode {
+        private ActiveObjectEventInterface event = null;
+        private EventNode next = null;
+        private final Object NEXT_LOCK = new Object();
+
+        public EventNode(ActiveObjectEventInterface event) {
+            this.event = event;
+        }
+
+        public ActiveObjectEventInterface getEvent() {
+            return this.event;
+        }
+
+        public void setEvent(ActiveObjectEventInterface event) {
+            this.event = event;
+        }
+
+        public EventNode getNext() {
+            Object object = this.NEXT_LOCK;
+            synchronized (object) {
+                return this.next;
+            }
+        }
+
+        public void setNext(EventNode next) {
+            Object object = this.NEXT_LOCK;
+            synchronized (object) {
+                this.next = next;
+            }
+        }
+    }
+
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.event.ComponentListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import javax.swing.JFrame;
+import objectdraw.ActiveObject;
+import objectdraw.CanvasManager;
+import objectdraw.DrawingCanvas;
+import objectdraw.JDrawingCanvas;
+import objectdraw.TerminateEvent;
+
+public class FrameCanvas
+extends JDrawingCanvas
+implements DrawingCanvas,
+ComponentListener,
+WindowListener {
+    private Dimension preferred_dim;
+    private CanvasManager canvasContent;
+    private JFrame frame;
+    public static final Dimension DEFAULT_PREFERRED_SIZE = new Dimension(400, 400);
+
+    public FrameCanvas() {
+        this(DEFAULT_PREFERRED_SIZE);
+    }
+
+    public FrameCanvas(int width, int height) {
+        this(new Dimension(width, height));
+    }
+
+    public FrameCanvas(Dimension size) {
+        this.canvasContent = new CanvasManager(size, this);
+        this.preferred_dim = size;
+        ActiveObject.initializeEventList();
+        this.frame = new JFrame();
+        Container contentPane = this.frame.getContentPane();
+        contentPane.add("Center", this);
+        contentPane.setVisible(true);
+        this.frame.pack();
+        this.frame.show();
+    }
+
+    public void setSize(Dimension d) {
+        this.preferred_dim = d;
+        this.frame.setSize(this.preferred_dim);
+        this.frame.pack();
+    }
+
+    public void setSize(int width, int height) {
+        this.setSize(new Dimension(width, height));
+    }
+
+    public Dimension getPreferredSize() {
+        return this.preferred_dim;
+    }
+
+    public void windowClosing(WindowEvent e) {
+        TerminateEvent killer = new TerminateEvent();
+        ActiveObject.scheduleClassEvent(killer);
+        this.frame.dispose();
+        System.exit(0);
+    }
+
+    public void windowActivated(WindowEvent e) {
+    }
+
+    public void windowClosed(WindowEvent e) {
+    }
+
+    public void windowDeactivated(WindowEvent e) {
+    }
+
+    public void windowDeiconified(WindowEvent e) {
+    }
+
+    public void windowIconified(WindowEvent e) {
+    }
+
+    public void windowOpened(WindowEvent e) {
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.AWTController;
+
+public class AWTFrameController
+extends AWTController {
+    private boolean inited = false;
+
+    public AWTFrameController() {
+        this.placeInFrame(400, 400);
+    }
+
+    public void init() {
+        this.inited = true;
+        super.init();
+    }
+
+    public void paint(Graphics g) {
+        if (!this.inited) {
+            this.init();
+            this.start();
+        }
+        super.paint(g);
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Color;
+import java.awt.geom.RoundRectangle2D;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Rectangular;
+
+abstract class RoundedRect
+extends Rectangular {
+    protected double arcWidth;
+    protected double arcHeight;
+
+    public RoundedRect(double x, double y, double width, double height, double arcWidth, double arcHeight, DrawingCanvas canvas) {
+        super(x, y, width, height);
+        this.arcWidth = arcWidth;
+        this.arcHeight = arcHeight;
+        this.addToCanvas(canvas);
+    }
+
+    public RoundedRect(Location origin, double width, double height, double arcWidth, double arcHeight, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, arcWidth, arcHeight, canvas);
+    }
+
+    public RoundedRect(Location p0, Location p1, double arcWidth, double arcHeight, DrawingCanvas canvas) {
+        super(p0, p1);
+        this.arcWidth = arcWidth;
+        this.arcHeight = arcHeight;
+        this.addToCanvas(canvas);
+    }
+
+    public double getArcWidth() {
+        return this.arcWidth;
+    }
+
+    public double getArcHeight() {
+        return this.arcHeight;
+    }
+
+    public synchronized void setArcWidth(double arcWidth) {
+        this.arcWidth = arcWidth;
+        this.setStateChanged();
+    }
+
+    public synchronized void setArcHeight(double arcHeight) {
+        this.arcHeight = arcHeight;
+        this.setStateChanged();
+    }
+
+    public boolean contains(Location point) {
+        RoundRectangle2D.Double shape = new RoundRectangle2D.Double(this.x, this.y, this.width, this.height, this.arcWidth, this.arcHeight);
+        return shape.contains(point.getX(), point.getY());
+    }
+
+    public String toString() {
+        return "RoundedRect at " + this.x + "," + this.y + " width:" + this.width + " height:" + this.height + " arcWidth:" + this.arcWidth + " arcHeight:" + this.arcHeight + " color:" + this.getColor().toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Polygon;
+import objectdraw.Drawable;
+import objectdraw.Drawable1DInterface;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+
+public class Line
+extends Drawable
+implements Drawable1DInterface {
+    protected Location start;
+    protected Location end;
+
+    public Line(Location start, Location end, DrawingCanvas canvas) {
+        this.start = new Location(start);
+        this.end = new Location(end);
+        this.addToCanvas(canvas);
+    }
+
+    public Line(double startx, double starty, double endx, double endy, DrawingCanvas c) {
+        this(new Location(startx, starty), new Location(endx, endy), c);
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+        Point start_int = this.start.toPoint();
+        Point end_int = this.end.toPoint();
+        g.drawLine(start_int.x, start_int.y, end_int.x, end_int.y);
+    }
+
+    public synchronized boolean contains(Location point) {
+        double buffer = 2.0;
+        double diffX = this.end.getX() - this.start.getX();
+        double diffY = this.end.getY() - this.start.getY();
+        double diffLength = Math.sqrt(diffX * diffX + diffY * diffY);
+        double dx = buffer * diffX / diffLength;
+        double dy = buffer * diffY / diffLength;
+        int[] xpoint = new int[4];
+        int[] ypoint = new int[4];
+        xpoint[0] = (int)(this.end.getX() + dx + dy);
+        ypoint[0] = (int)(this.end.getY() + dy - dx);
+        xpoint[1] = (int)(this.end.getX() + dx - dy);
+        ypoint[1] = (int)(this.end.getY() + dy + dx);
+        xpoint[2] = (int)(this.start.getX() - dx - dy);
+        ypoint[2] = (int)(this.start.getY() - dy + dx);
+        xpoint[3] = (int)(this.start.getX() - dx + dy);
+        ypoint[3] = (int)(this.start.getY() - dy - dx);
+        Polygon pg = new Polygon(xpoint, ypoint, 4);
+        return pg.contains(point.getX(), point.getY());
+    }
+
+    public Location getStart() {
+        return this.start;
+    }
+
+    public Location getEnd() {
+        return this.end;
+    }
+
+    public synchronized void setStart(Location point) {
+        this.start = new Location(point);
+        this.setStateChanged();
+    }
+
+    public synchronized void setStart(double x, double y) {
+        this.start = new Location(x, y);
+        this.setStateChanged();
+    }
+
+    public synchronized void setEnd(Location point) {
+        this.end = new Location(point);
+        this.setStateChanged();
+    }
+
+    public synchronized void setEnd(double x, double y) {
+        this.end = new Location(x, y);
+        this.setStateChanged();
+    }
+
+    public synchronized void setEndPoints(Location start, Location end) {
+        this.setStart(start);
+        this.setEnd(end);
+    }
+
+    public synchronized void setEndPoints(double x1, double y1, double x2, double y2) {
+        this.setStart(x1, y1);
+        this.setEnd(x2, y2);
+    }
+
+    public String toString() {
+        return "Line from " + this.start + " to " + this.end + " color:" + this.getColor().toString();
+    }
+
+    public synchronized void moveTo(double x, double y) {
+        this.move(x - this.start.getX(), y - this.start.getY());
+    }
+
+    public synchronized void move(double dx, double dy) {
+        this.start.translate(dx, dy);
+        this.end.translate(dx, dy);
+        this.setStateChanged();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+public class RandomDoubleGenerator {
+    private double max;
+    private double min;
+
+    public RandomDoubleGenerator(double min, double max) {
+        this.min = min;
+        this.max = max;
+    }
+
+    public double nextValue() {
+        return this.min + Math.random() * (this.max - this.min);
+    }
+
+    public String toString() {
+        return "RandomDoubleGenerator with range " + this.min + " to " + this.max;
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.Bounds;
+import objectdraw.CanvasManager;
+import objectdraw.Drawable;
+import objectdraw.Drawable2DInterface;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+
+abstract class Drawable2D
+extends Drawable
+implements Drawable2DInterface {
+    Drawable2D() {
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+    }
+
+    abstract Bounds getBounds();
+
+    public double getX() {
+        return this.getBounds().getX();
+    }
+
+    public double getY() {
+        return this.getBounds().getY();
+    }
+
+    public Location getLocation() {
+        return this.getBounds().getLocation();
+    }
+
+    public boolean contains(Location point) {
+        return this.getBounds().contains(point);
+    }
+
+    public abstract double getWidth();
+
+    public abstract double getHeight();
+
+    public boolean overlaps(Drawable2DInterface item) {
+        boolean disjoint;
+        double itemleft = item.getX();
+        double itemright = itemleft + item.getWidth();
+        double itemtop = item.getY();
+        double itembottom = itemtop + item.getHeight();
+        boolean bl = disjoint = this.getX() + this.getWidth() < itemleft || itemright < this.getX() || this.getY() + this.getHeight() < itemtop || itembottom < this.getY();
+        if (this.canvasContent != null && this.getCanvas() == item.getCanvas() && !disjoint) {
+            return true;
+        }
+        return false;
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.AWTWindowController;
+
+class AWTInitializer
+extends Thread {
+    AWTWindowController windowController;
+
+    public AWTInitializer(AWTWindowController windowController) {
+        this.windowController = windowController;
+        this.start();
+    }
+
+    public void run() {
+        while (!this.windowController.callBegin()) {
+            try {
+                Thread.sleep(100);
+            }
+            catch (InterruptedException interruptedException) {
+                // empty catch block
+            }
+        }
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.AWTWindowController;
+
+public class AWTFrameWindowController
+extends AWTWindowController {
+    private boolean inited = false;
+
+    public AWTFrameWindowController() {
+        this.placeInFrame(400, 400);
+    }
+
+    public void init() {
+        this.inited = true;
+        super.init();
+    }
+
+    public void paint(Graphics g) {
+        if (!this.inited) {
+            this.init();
+            this.start();
+        }
+        super.paint(g);
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+interface ActiveObjectEventInterface {
+    public void execute();
+
+    public boolean isExpired();
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.Drawable2DInterface;
+
+public interface Resizable2DInterface
+extends Drawable2DInterface {
+    public void setSize(double var1, double var3);
+
+    public void setWidth(double var1);
+
+    public void setHeight(double var1);
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Dimension;
+import javax.swing.JPanel;
+
+public class SizeablePanel
+extends JPanel {
+    private int width;
+    private int height;
+
+    public SizeablePanel(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
+
+    public Dimension getMinimumSize() {
+        return new Dimension(this.width, this.height);
+    }
+
+    public Dimension getPreferredSize() {
+        return new Dimension(this.width, this.height);
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.DrawingCanvas;
+import objectdraw.Line;
+import objectdraw.Location;
+
+public class AngLine
+extends Line {
+    public AngLine(Location start, double length, double radianAngle, DrawingCanvas canvas) {
+        this(start.getX(), start.getY(), length, radianAngle, canvas);
+    }
+
+    public AngLine(double startX, double startY, double length, double radianAngle, DrawingCanvas canvas) {
+        super(startX, startY, startX + length * Math.cos(radianAngle), startY - length * Math.sin(radianAngle), canvas);
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Rect;
+import objectdraw.Resizable2DInterface;
+
+public class FilledRect
+extends Rect
+implements Resizable2DInterface {
+    public FilledRect(Location origin, double width, double height, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, canvas);
+    }
+
+    public FilledRect(double x, double y, double width, double height, DrawingCanvas canvas) {
+        super(x, y, width, height, canvas);
+    }
+
+    public FilledRect(Location p0, Location p1, DrawingCanvas canvas) {
+        super(p0, p1, canvas);
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+        g.fillRect((int)Math.round(this.x), (int)Math.round(this.y), (int)Math.round(this.width), (int)Math.round(this.height));
+    }
+
+    public String toString() {
+        return "Filled" + super.toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.applet.Applet;
+import java.applet.AppletContext;
+import java.applet.AudioClip;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Vector;
+
+class ControllerContext
+implements AppletContext {
+    private Applet myController;
+    private Vector appletList = new Vector();
+
+    public ControllerContext(Applet controller) {
+        this.myController = controller;
+        this.appletList.add(controller);
+    }
+
+    public Applet getApplet(String name) {
+        return null;
+    }
+
+    public Enumeration getApplets() {
+        return this.appletList.elements();
+    }
+
+    public AudioClip getAudioClip(URL url) {
+        return Applet.newAudioClip(url);
+    }
+
+    public Image getImage(URL url) {
+        String imgName = url.getFile();
+        return Toolkit.getDefaultToolkit().getImage(imgName);
+    }
+
+    public void setStream(String key, InputStream stream) {
+    }
+
+    public Iterator getStreamKeys() {
+        return null;
+    }
+
+    public InputStream getStream(String key) {
+        return null;
+    }
+
+    public void showDocument(URL url) {
+        this.showStatus("Reqeusted to load page" + url);
+    }
+
+    public void showDocument(URL url, String target) {
+        this.showDocument(url);
+    }
+
+    public void showStatus(String status) {
+        System.out.println(status);
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.event.ComponentListener;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.ImageObserver;
+import objectdraw.CanvasManager;
+import objectdraw.DrawableIterator;
+
+public interface DrawingCanvas
+extends ImageObserver,
+ComponentListener {
+    public CanvasManager getCanvasContent();
+
+    public void clear();
+
+    public void repaint();
+
+    public void enableAutoRepaint();
+
+    public void disableAutoRepaint();
+
+    public Graphics getGraphics();
+
+    public boolean prepareImage(Image var1, ImageObserver var2);
+
+    public Dimension getSize();
+
+    public int getWidth();
+
+    public int getHeight();
+
+    public Image createImage(int var1, int var2);
+
+    public void addMouseListener(MouseListener var1);
+
+    public void addMouseMotionListener(MouseMotionListener var1);
+
+    public void addComponentListener(ComponentListener var1);
+
+    public void addKeyListener(KeyListener var1);
+
+    public boolean requestFocusInWindow();
+
+    public void requestFocus();
+
+    public DrawableIterator getDrawableIterator();
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Resizable2DInterface;
+import objectdraw.RoundedRect;
+
+public class FilledRoundedRect
+extends RoundedRect
+implements Resizable2DInterface {
+    public FilledRoundedRect(Location origin, double width, double height, double arcWidth, double arcHeight, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, arcWidth, arcHeight, canvas);
+    }
+
+    public FilledRoundedRect(double x, double y, double width, double height, double arcWidth, double arcHeight, DrawingCanvas canvas) {
+        super(x, y, width, height, arcWidth, arcHeight, canvas);
+    }
+
+    public FilledRoundedRect(Location p0, Location p1, double arcWidth, double arcHeight, DrawingCanvas canvas) {
+        super(p0, p1, arcWidth, arcHeight, canvas);
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+        g.fillRoundRect((int)Math.round(this.x), (int)Math.round(this.y), (int)Math.round(this.width), (int)Math.round(this.height), (int)this.arcWidth, (int)this.arcHeight);
+    }
+
+    public String toString() {
+        return "Filled" + super.toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import objectdraw.Bounds;
+import objectdraw.Location;
+import objectdraw.Resizable2D;
+import objectdraw.Resizable2DInterface;
+
+abstract class Rectangular
+extends Resizable2D
+implements Resizable2DInterface {
+    protected double x;
+    protected double y;
+    protected double width;
+    protected double height;
+
+    public Rectangular(Location origin, double width, double height) {
+        this(origin.getX(), origin.getY(), width, height);
+    }
+
+    public Rectangular(double x, double y, double width, double height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    public Rectangular(Location p0, Location p1) {
+        this.width = p1.getX() - p0.getX();
+        this.height = p1.getY() - p0.getY();
+        if (this.width < 0.0) {
+            this.x = p1.getX();
+            if (this.height < 0.0) {
+                this.y = p1.getY();
+                this.height = - this.height;
+            } else {
+                this.y = p0.getY();
+            }
+            this.width = - this.width;
+        } else {
+            this.x = p0.getX();
+            if (this.height < 0.0) {
+                this.y = p1.getY();
+                this.height = - this.height;
+            } else {
+                this.y = p0.getY();
+            }
+        }
+    }
+
+    Bounds getBounds() {
+        return new Bounds(this.x, this.y, this.width, this.height);
+    }
+
+    void setBounds(Bounds b) {
+        this.x = b.getX();
+        this.y = b.getY();
+        this.width = b.getWidth();
+        this.height = b.getHeight();
+        this.setStateChanged();
+    }
+
+    public void setSize(double width, double height) {
+        this.width = width;
+        this.height = height;
+        this.setStateChanged();
+    }
+
+    public synchronized void setWidth(double width) {
+        this.width = width;
+        this.setStateChanged();
+    }
+
+    public synchronized void setHeight(double height) {
+        this.height = height;
+        this.setStateChanged();
+    }
+
+    public double getWidth() {
+        return this.width;
+    }
+
+    public double getHeight() {
+        return this.height;
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.Arc;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Resizable2DInterface;
+
+public class FilledArc
+extends Arc
+implements Resizable2DInterface {
+    public FilledArc(Location origin, double width, double height, double startAngle, double arcAngle, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, startAngle, arcAngle, canvas);
+    }
+
+    public FilledArc(double x, double y, double width, double height, double startAngle, double arcAngle, DrawingCanvas canvas) {
+        super(x, y, width, height, startAngle, arcAngle, canvas);
+    }
+
+    public FilledArc(Location p0, Location p1, double startAngle, double arcAngle, DrawingCanvas canvas) {
+        super(p0, p1, startAngle, arcAngle, canvas);
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+        g.fillArc((int)Math.round(this.x), (int)Math.round(this.y), (int)Math.round(this.width), (int)Math.round(this.height), (int)this.startAngle, (int)this.arcAngle);
+    }
+
+    public String toString() {
+        return "Filled" + super.toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+import objectdraw.Location;
+
+class Bounds {
+    private double x;
+    private double y;
+    private double width;
+    private double height;
+
+    public Bounds(Location location, double width, double height) {
+        this(location.getX(), location.getY(), width, height);
+    }
+
+    public Bounds(double x, double y, double width, double height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    public synchronized Location getLocation() {
+        return new Location(this.x, this.y);
+    }
+
+    public double getX() {
+        return this.x;
+    }
+
+    public double getY() {
+        return this.y;
+    }
+
+    public double getWidth() {
+        return this.width;
+    }
+
+    public double getHeight() {
+        return this.height;
+    }
+
+    public synchronized void setLocation(Location point) {
+        this.x = point.getX();
+        this.y = point.getY();
+    }
+
+    public synchronized void setLocation(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public synchronized void setWidth(double width) {
+        this.width = width;
+    }
+
+    public synchronized void setHeight(double height) {
+        this.height = height;
+    }
+
+    public synchronized void setDimensions(double width, double height) {
+        this.setWidth(width);
+        this.setHeight(height);
+    }
+
+    public synchronized void translate(double dx, double dy) {
+        this.x += dx;
+        this.y += dy;
+    }
+
+    public synchronized boolean contains(Location point) {
+        if (point.getX() >= this.x && point.getY() >= this.y && point.getX() <= this.x + this.width && point.getY() <= this.y + this.height) {
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized boolean intersects(Bounds b) {
+        double bleft = b.x;
+        double bright = b.x + b.width;
+        double btop = b.y;
+        double bbottom = b.y + b.height;
+        boolean disjoint = this.x + this.width < bleft || bright < this.x || this.y + this.height < btop || bbottom < this.y;
+        return !disjoint;
+    }
+
+    public String toString() {
+        return "Bounds at " + this.getLocation().toString() + " width=" + this.width + "height=" + this.height;
+    }
+
+    public synchronized Rectangle toRectangle() {
+        Rectangle result = new Rectangle(this.getLocation().toPoint());
+        result.width = (int)Math.rint(this.width);
+        result.height = (int)Math.rint(this.height);
+        return result;
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Point;
+import objectdraw.Bounds;
+import objectdraw.CanvasManager;
+import objectdraw.Drawable2D;
+import objectdraw.Drawable2DInterface;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+
+public class Text
+extends Drawable2D
+implements Drawable2DInterface {
+    protected Location origin;
+    protected double width;
+    protected double height;
+    protected double baseHeight;
+    protected Font font;
+    protected String text;
+    protected DrawingCanvas canvas;
+    protected Graphics g;
+    protected FontMetrics fm;
+
+    public Text(Object text, Location origin, DrawingCanvas canvas) {
+        if (text == null) {
+            throw new NullPointerException("Object to be displayed is undefined in Text construction");
+        }
+        if (origin == null) {
+            throw new NullPointerException("Location specified in Text construction is undefined");
+        }
+        if (canvas == null) {
+            throw new NullPointerException("Canvas parameter is undefined in Text construction");
+        }
+        this.canvas = canvas;
+        this.text = text.toString();
+        this.origin = new Location(origin);
+        this.addToCanvas(canvas);
+    }
+
+    public Text(Object text, double x, double y, DrawingCanvas canvas) {
+        this(text, new Location(x, y), canvas);
+    }
+
+    public Text(boolean text, Location origin, DrawingCanvas canvas) {
+        this("" + text, origin, canvas);
+    }
+
+    public Text(boolean text, double x, double y, DrawingCanvas canvas) {
+        this("" + text, new Location(x, y), canvas);
+    }
+
+    public Text(char text, Location origin, DrawingCanvas canvas) {
+        this("" + text, origin, canvas);
+    }
+
+    public Text(char text, double x, double y, DrawingCanvas canvas) {
+        this("" + text, new Location(x, y), canvas);
+    }
+
+    public Text(long text, Location origin, DrawingCanvas canvas) {
+        this("" + text, origin, canvas);
+    }
+
+    public Text(long text, double x, double y, DrawingCanvas canvas) {
+        this("" + text, new Location(x, y), canvas);
+    }
+
+    public Text(double text, Location origin, DrawingCanvas canvas) {
+        this("" + text, origin, canvas);
+    }
+
+    public Text(double text, double x, double y, DrawingCanvas canvas) {
+        this("" + text, new Location(x, y), canvas);
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+        this.g = g;
+        Font defaultFont = g.getFont();
+        if (this.font == null) {
+            this.font = defaultFont;
+        }
+        g.setFont(this.font);
+        Point loc = this.origin.toPoint();
+        this.fm = g.getFontMetrics(this.getFont());
+        double baseHeight = this.fm.getMaxAscent();
+        g.drawString(this.text, loc.x, loc.y + (int)Math.rint(baseHeight));
+        g.setFont(defaultFont);
+    }
+
+    public synchronized void addToCanvas(DrawingCanvas canvas) {
+        this.canvas = canvas;
+        this.g = null;
+        this.fm = null;
+        super.addToCanvas(canvas);
+    }
+
+    private void calculateSize() {
+        if (this.canvas != null) {
+            if (this.g == null) {
+                this.g = this.canvas.getGraphics();
+            }
+            if (this.g != null) {
+                if (this.fm == null) {
+                    this.fm = this.g.getFontMetrics(this.getFont());
+                }
+                if (this.fm != null) {
+                    this.width = this.fm.stringWidth(this.text);
+                    this.baseHeight = this.fm.getMaxAscent();
+                    this.height = this.baseHeight + (double)this.fm.getMaxDescent();
+                }
+            }
+        }
+    }
+
+    public double getWidth() {
+        this.calculateSize();
+        return this.width;
+    }
+
+    public double getHeight() {
+        this.calculateSize();
+        return this.height;
+    }
+
+    Bounds getBounds() {
+        double x = this.origin.getX();
+        double y = this.origin.getY();
+        this.calculateSize();
+        Bounds bounds = new Bounds(x, y, this.width, this.height);
+        return bounds;
+    }
+
+    public synchronized void moveTo(Location point) {
+        this.origin = new Location(point);
+        this.setStateChanged();
+    }
+
+    public synchronized void move(double dx, double dy) {
+        this.origin.translate(dx, dy);
+        this.setStateChanged();
+    }
+
+    public Font getFont() {
+        if (this.font == null && this.canvas != null) {
+            if (this.g == null) {
+                this.g = this.canvas.getGraphics();
+            }
+            if (this.g != null) {
+                this.font = this.g.getFont();
+            }
+        }
+        return this.font;
+    }
+
+    public synchronized void setText(String text) {
+        this.text = text;
+        this.canvasContent.setStateChanged();
+    }
+
+    public synchronized void setText(long text) {
+        this.setText(String.valueOf(text));
+    }
+
+    public synchronized void setText(boolean text) {
+        this.setText(String.valueOf(text));
+    }
+
+    public synchronized void setText(char text) {
+        this.setText(String.valueOf(text));
+    }
+
+    public synchronized void setText(double text) {
+        this.setText(String.valueOf(text));
+    }
+
+    public synchronized void setText(Object text) {
+        if (text == null) {
+            throw new NullPointerException("Parameter to setText is undefined");
+        }
+        this.setText(text.toString());
+    }
+
+    public String getText() {
+        return this.text;
+    }
+
+    public synchronized void setFont(Font f) {
+        this.font = f;
+        this.fm = null;
+        this.setStateChanged();
+    }
+
+    public synchronized void setFont(String fname) {
+        this.setFont(new Font(fname, this.getFont().getStyle(), this.getFont().getSize()));
+    }
+
+    public synchronized void setFontSize(int size) {
+        this.setFont(new Font(this.getFont().getName(), this.getFont().getStyle(), size));
+    }
+
+    public synchronized void setItalic() {
+        this.setItalic(true);
+    }
+
+    public synchronized void setItalic(boolean bool) {
+        if (bool) {
+            if (this.getFont().getStyle() == 1) {
+                this.setFont(new Font(this.getFont().getName(), 3, this.getFont().getSize()));
+            } else {
+                this.setFont(new Font(this.getFont().getName(), 2, this.getFont().getSize()));
+            }
+        } else if (this.getFont().getStyle() == 3) {
+            this.setFont(new Font(this.getFont().getName(), 1, this.getFont().getSize()));
+        } else {
+            this.setFont(new Font(this.getFont().getName(), 0, this.getFont().getSize()));
+        }
+    }
+
+    public synchronized void setBold() {
+        this.setBold(true);
+    }
+
+    public synchronized void setBold(boolean bool) {
+        if (bool) {
+            if (this.getFont().getStyle() == 2) {
+                this.setFont(new Font(this.getFont().getName(), 3, this.getFont().getSize()));
+            } else {
+                this.setFont(new Font(this.getFont().getName(), 1, this.getFont().getSize()));
+            }
+        } else if (this.getFont().getStyle() == 3) {
+            this.setFont(new Font(this.getFont().getName(), 2, this.getFont().getSize()));
+        } else {
+            this.setFont(new Font(this.getFont().getName(), 0, this.getFont().getSize()));
+        }
+    }
+
+    public synchronized void setPlain() {
+        this.setFont(new Font(this.getFont().getName(), 0, this.getFont().getSize()));
+    }
+
+    public String toString() {
+        return "Text at " + this.origin + " text:" + this.text + " font:" + this.getFont().toString() + " color:" + this.getColor().toString();
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Dimension;
+import java.awt.Panel;
+
+public class AWTSizeablePanel
+extends Panel {
+    private int width;
+    private int height;
+
+    public AWTSizeablePanel(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
+
+    public Dimension getMinimumSize() {
+        return new Dimension(this.width, this.height);
+    }
+
+    public Dimension getPreferredSize() {
+        return new Dimension(this.width, this.height);
+    }
+}
+
+/*
+ * Decompiled with CFR 0_121.
+ */
+package objectdraw;
+
+import java.awt.Graphics;
+import objectdraw.DrawingCanvas;
+import objectdraw.Location;
+import objectdraw.Oval;
+import objectdraw.Resizable2DInterface;
+
+public class FramedOval
+extends Oval
+implements Resizable2DInterface {
+    public FramedOval(Location origin, double width, double height, DrawingCanvas canvas) {
+        this(origin.getX(), origin.getY(), width, height, canvas);
+    }
+
+    public FramedOval(double x, double y, double width, double height, DrawingCanvas canvas) {
+        super(x, y, width, height, canvas);
+    }
+
+    public FramedOval(Location p0, Location p1, DrawingCanvas canvas) {
+        super(p0, p1, canvas);
+    }
+
+    synchronized void draw(Graphics g) {
+        super.draw(g);
+        g.drawOval((int)Math.round(this.x), (int)Math.round(this.y), (int)Math.round(this.width), (int)Math.round(this.height));
+    }
+
+    public String toString() {
+        return "Filled" + super.toString();
+    }
+}
+

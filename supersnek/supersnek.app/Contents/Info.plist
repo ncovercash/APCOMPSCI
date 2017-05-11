@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+<key>CFBundleDevelopmentRegion</key>
+<string>English</string>
+<key>CFBundleExecutable</key>
+<string>JavaAppLauncher</string>
+<key>CFBundleIconFile</key>
+<string>img.icns</string>
+<key>CFBundleIdentifier</key>
+<string>supersnek.Driver</string>
+<key>CFBundleDisplayName</key>
+<string>supersnek</string>
+<key>CFBundleInfoDictionaryVersion</key>
+<string>6.0</string>
+<key>CFBundleName</key>
+<string>supersnek</string>
+<key>CFBundlePackageType</key>
+<string>APPL</string>
+<key>CFBundleShortVersionString</key>
+<string>1.0</string>
+<key>CFBundleSignature</key>
+<string>????</string>
+<key>CFBundleVersion</key>
+<string>1</string>
+<key>NSHumanReadableCopyright</key>
+<string>2017 Noah Overcash</string>
+<key>JVMMainClassName</key>
+<string>supersnek.Driver</string>
+<key>JVMOptions</key>
+<array>
+<string>-Xdock:name=supersnek</string>
+</array>
+<key>JVMArguments</key>
+<array>
+</array>
+</dict>
+</plist>
+

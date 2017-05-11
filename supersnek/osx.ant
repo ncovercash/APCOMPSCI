@@ -1,0 +1,28 @@
+<project name="supersnek" default="bundle-supersnek" basedir=".">  
+    <target name="create_run_jar">
+        <jar destfile="supersnek.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="supersnek.Driver"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/noah/APCOMPSCI/objectdraw.jar"/>
+        </jar>
+    </target>      
+    <taskdef name="bundleapp"
+             classname="com.oracle.appbundler.AppBundlerTask"   
+             classpath="lib/appbundler-1.0.jar" />
+    <!-- See the lib reference here, this is why you need to use the lib directory! -->
+    <target name="bundle-supersnek" depends="create_run_jar">
+        <delete dir="supersnek.app" failonerror="false"/>
+        <bundleapp outputdirectory="." name="supersnek"
+            displayname="supersnek"
+            identifier="supersnek.Driver"
+            mainclassname="supersnek.Driver"
+            icon="img/img.icns"
+            copyright="2017 Noah Overcash">
+            <classpath file="supersnek.jar" />
+            <option value="-Xdock:name=supersnek" />
+        </bundleapp>
+    </target>
+</project>
